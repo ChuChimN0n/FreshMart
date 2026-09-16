@@ -1,0 +1,65 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* ===== Bách Hóa Xanh palette ===== */
+    --color-bhx-50: #ecf8f1;
+    --color-bhx-100: #d5efdf;
+    --color-bhx-200: #aedfc4;
+    --color-bhx-300: #7bcaa1;
+    --color-bhx-400: #3faf77;
+    --color-bhx-500: #12945c;
+    --color-bhx-600: #0c7e4e;
+    --color-bhx-700: #07663d;
+    --color-bhx-800: #064f30;
+    --color-bhx-900: #043a23;
+    --color-bhx-orange: #f0502b;
+    --color-bhx-orange-dark: #d83c14;
+    --color-bhx-red: #e4002b;
+    --color-bhx-yellow: #ffc107;
+    --color-bhx-gray: #f4f6f5;
+}
+
+@layer components {
+    .bhx-btn-primary {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-bhx-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-bhx-600 active:bg-bhx-700;
+    }
+
+    .bhx-btn-orange {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-bhx-orange px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-bhx-orange-dark;
+    }
+
+    .bhx-btn-outline {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-lg border-2 border-white/80 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10;
+    }
+
+    .bhx-input {
+        @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-bhx-500 focus:outline-none focus:ring-2 focus:ring-bhx-500/20;
+    }
+
+    .bhx-card {
+        @apply rounded-xl bg-white shadow-sm;
+    }
+
+    .bhx-price {
+        @apply font-bold text-bhx-orange;
+    }
+
+    .bhx-tag {
+        @apply inline-flex items-center rounded px-2 py-0.5 text-xs font-medium;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+}

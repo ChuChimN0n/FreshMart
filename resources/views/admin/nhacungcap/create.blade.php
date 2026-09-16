@@ -1,0 +1,33 @@
+@extends('layouts.app')
+@section('title', 'Thêm NCC')
+@section('content')
+<h1 class="text-2xl font-bold mb-4">Thêm nhà cung cấp</h1>
+<div class="bg-white rounded-lg shadow p-6 max-w-lg">
+    <form method="POST" action="{{ route('admin.nhacungcap.store') }}">
+        @csrf
+        <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tên NCC *</label>
+            <input type="text" name="tenNCC" value="{{ old('tenNCC') }}" class="w-full border rounded px-3 py-2 @error('tenNCC') border-red-500 @enderror" required>
+            @error('tenNCC') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+        </div>
+        <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
+            <input type="text" name="soDienThoai" value="{{ old('soDienThoai') }}" class="w-full border rounded px-3 py-2 @error('soDienThoai') border-red-500 @enderror" required>
+            @error('soDienThoai') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+        </div>
+        <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" name="email" value="{{ old('email') }}" class="w-full border rounded px-3 py-2 @error('email') border-red-500 @enderror">
+            @error('email') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+            <input type="text" name="diaChi" value="{{ old('diaChi') }}" class="w-full border rounded px-3 py-2">
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="bg-bhx-500 text-white px-4 py-2 rounded hover:bg-bhx-600">Thêm</button>
+            <a href="{{ route('admin.nhacungcap.index') }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Hủy</a>
+        </div>
+    </form>
+</div>
+@endsection

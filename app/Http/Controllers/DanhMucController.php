@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\DanhMuc;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -28,6 +30,8 @@ class DanhMucController extends Controller
     {
         $request->validate([
             'tenDM' => 'required|string|max:100|unique:DanhMuc,tenDM',
+        ], [
+            'tenDM.unique' => 'Tên Danh Mục đã tồn tại',
         ]);
 
         DanhMuc::create(['tenDM' => $request->tenDM]);
@@ -51,5 +55,25 @@ class DanhMucController extends Controller
         Cache::forget('danhMucs');
 
         return redirect()->route('staff.danhmuc.index')->with('success', 'Cập nhật danh mục thành công!');
+    }
+
+    public function destroy(DanhMuc $danhmuc): RedirectResponse
+    {
+        if ($danhmuc->sanPhams()->exists()) {
+            return back()->with('error', 'Không thể xóa danh mục vì còn sản phẩm thuộc danh mục này!');
+        }
+
+        try {
+            $danhmuc->delete();
+        } catch (QueryException $e) {
+            if ($danhmuc->sanPhams()->exists()) {
+                return back()->with('error', 'Không thể xóa danh mục vì còn sản phẩm thuộc danh mục này!');
+            }
+
+            throw $e;
+        }
+        Cache::forget('danhMucs');
+
+        return back()->with('success', 'Xóa danh mục thành công!');
     }
 }

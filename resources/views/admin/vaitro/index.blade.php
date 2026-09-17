@@ -17,9 +17,9 @@
             <div class="flex gap-3 items-center">
                 <a href="{{ route('admin.vaitro.edit', $vt) }}" class="text-blue-600 hover:underline text-sm">Sửa</a>
                 @if(! in_array($vt->maVT, [\App\Models\VaiTro::ADMIN_ID, \App\Models\VaiTro::STAFF_ID, \App\Models\VaiTro::KHACH_HANG_ID]))
-                <form method="POST" action="{{ route('admin.vaitro.destroy', $vt) }}" class="inline">
+                <form method="POST" action="{{ route('admin.vaitro.destroy', $vt) }}" class="inline" data-confirm="Xóa vai trò {{ $vt->tenVT }}?">
                     @csrf @method('DELETE')
-                    <button type="submit" class="text-red-600 hover:underline text-sm" onclick="return confirm('Xóa vai trò này?')">Xóa</button>
+                    <button type="submit" class="text-red-600 hover:underline text-sm">Xóa</button>
                 </form>
                 @endif
             </div>

@@ -54,10 +54,13 @@ class GioHang extends Model
                 $pricesChanged = $pricesChanged || $detail->donGia != $detail->sanPham->giaBan;
                 $detail->donGia = $detail->sanPham->giaBan;
                 $detail->thanhTien = $detail->soLuong * $detail->donGia;
+                if ($detail->isDirty()) {
+                    $detail->save();
+                }
             }
         }
 
-        $this->tongTien = $this->chiTietGioHangs->sum('thanhTien');
+        $this->update(['tongTien' => $this->chiTietGioHangs->sum('thanhTien')]);
 
         return $pricesChanged;
     }

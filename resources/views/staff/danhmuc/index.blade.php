@@ -27,6 +27,11 @@
                 <td class="px-4 py-2">{{ $dm->tenDM }}</td>
                 <td class="px-4 py-2">
                     <a href="{{ route('staff.danhmuc.edit', $dm) }}" class="text-blue-600 hover:underline">Sửa</a>
+                    <form method="POST" action="{{ route('staff.danhmuc.destroy', $dm) }}" class="inline" data-confirm="Xóa danh mục {{ $dm->tenDM }}?">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:underline ml-2">Xóa</button>
+                    </form>
                 </td>
             </tr>
             @empty

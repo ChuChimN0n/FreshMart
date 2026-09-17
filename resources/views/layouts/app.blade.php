@@ -273,7 +273,21 @@
         </div>
     </footer>
 
+    {{-- Delete confirm modal (dùng chung cho các form data-confirm) --}}
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" onclick="closeDeleteConfirm()"></div>
+        <div class="relative bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+            <h3 class="font-bold text-lg text-gray-800 mb-2">Xác nhận xóa</h3>
+            <p id="deleteConfirmMessage" class="text-sm text-gray-600 mb-5"></p>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeDeleteConfirm()" class="px-4 py-2 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-100 transition">Hủy</button>
+                <button type="button" id="deleteConfirmBtn" class="px-4 py-2 rounded-lg text-sm bg-red-600 text-white font-medium hover:bg-red-700 transition">Xóa</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let deleteConfirmForm = null;
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             const icon = document.getElementById('hamburgerIcon');
@@ -305,6 +319,30 @@
 
         setTimeout(() => { const el = document.getElementById('flash-success'); if (el) el.remove(); }, 4000);
         setTimeout(() => { const el = document.getElementById('flash-error'); if (el) el.remove(); }, 5000);
+
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form && form.matches && form.matches('form[data-confirm]')) {
+                e.preventDefault();
+                deleteConfirmForm = form;
+                document.getElementById('deleteConfirmMessage').textContent = form.getAttribute('data-confirm');
+                document.getElementById('deleteConfirmModal').classList.remove('hidden');
+            }
+        });
+
+        function closeDeleteConfirm() {
+            const modal = document.getElementById('deleteConfirmModal');
+            if (modal) modal.classList.add('hidden');
+            deleteConfirmForm = null;
+        }
+
+        document.getElementById('deleteConfirmBtn').addEventListener('click', function() {
+            if (deleteConfirmForm) deleteConfirmForm.submit();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeDeleteConfirm();
+        });
     </script>
 </body>
 </html>

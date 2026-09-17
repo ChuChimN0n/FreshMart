@@ -55,7 +55,7 @@
             <div class="flex flex-col items-end gap-1">
                 <span class="flex items-center gap-1">
                     @for($i = 1; $i <= 5; $i++)
-                        <i class="bi {{ $i <= round($trungBinhSao) ? 'bi-star-fill' : 'bi-star' }} text-bhx-yellow"></i>
+                        <i class="bi {{ $i <= round($trungBinhSao) ? 'bi-star-fill text-bhx-yellow' : 'bi-star text-gray-300' }}"></i>
                     @endfor
                 </span>
                 @if($tongDanhGia > 0)
@@ -187,9 +187,9 @@
     <div class="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 mt-4">
         <div class="bhx-card p-5 text-center">
             <p class="text-4xl font-extrabold text-gray-900">{{ number_format($trungBinhSao, 1, ',', '.') }}</p>
-            <div class="flex justify-center gap-0.5 mt-2">
+            <div class="flex justify-center gap-0.5 mt-2 text-lg">
                 @for($i = 1; $i <= 5; $i++)
-                    <i class="bi {{ $i <= round($trungBinhSao) ? 'bi-star-fill' : 'bi-star' }} text-bhx-yellow"></i>
+                    <i class="bi {{ $i <= round($trungBinhSao) ? 'bi-star-fill text-bhx-yellow' : 'bi-star text-gray-300' }}"></i>
                 @endfor
             </div>
             <p class="text-xs text-gray-400 mt-2">{{ $tongDanhGia }} lượt đánh giá</p>
@@ -227,11 +227,15 @@
                     <input type="hidden" name="maSP" value="{{ $sanpham->maSP }}">
                     <div>
                         <label class="block text-sm text-gray-600 mb-1.5">Số sao</label>
-                        <select name="soSao" class="bhx-input !w-auto">
-                            @for($i = 5; $i >= 1; $i--)
-                                <option value="{{ $i }}">{{ $i }} sao</option>
+                        <div id="starRating" class="flex items-center gap-1">
+                            @for($i = 1; $i <= 5; $i++)
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="soSao" value="{{ $i }}" class="hidden" {{ old('soSao', 5) == $i ? 'checked' : '' }}>
+                                    <i class="bi bi-star-fill text-2xl"></i>
+                                </label>
                             @endfor
-                        </select>
+                            <span id="starRatingText" class="ml-2 text-sm font-medium text-gray-600"></span>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1.5">Nội dung đánh giá</label>
@@ -263,7 +267,7 @@
                 <p class="font-medium text-sm">{{ $dg->taiKhoan->hoTen ?? 'Khách hàng' }}</p>
                 <span class="flex items-center gap-0.5 mt-0.5">
                     @for($i = 1; $i <= 5; $i++)
-                        <i class="bi {{ $i <= $dg->soSao ? 'bi-star-fill' : 'bi-star' }} text-bhx-yellow text-xs"></i>
+                        <i class="bi {{ $i <= $dg->soSao ? 'bi-star-fill text-bhx-yellow' : 'bi-star text-gray-300' }} text-sm"></i>
                     @endfor
                 </span>
             </div>
@@ -327,6 +331,29 @@
             if (panel) { panel.classList.remove('hidden'); }
         });
     });
+
+    (function () {
+        var wrap = document.getElementById('starRating');
+        if (!wrap) return;
+        var labels = {1: 'Rất tệ', 2: 'Tệ', 3: 'Bình thường', 4: 'Tốt', 5: 'Tuyệt vời'};
+        var text = document.getElementById('starRatingText');
+        function paint(n) {
+            wrap.querySelectorAll('label').forEach(function (lb, idx) {
+                lb.querySelector('i').className = 'bi text-2xl ' + (idx < n ? 'bi-star-fill text-bhx-yellow' : 'bi-star text-gray-300');
+            });
+            if (text) text.textContent = labels[n] || '';
+        }
+        wrap.querySelectorAll('input[name="soSao"]').forEach(function (radio) {
+            radio.addEventListener('change', function () { paint(parseInt(radio.value, 10)); });
+            radio.closest('label').addEventListener('mouseenter', function () { paint(parseInt(radio.value, 10)); });
+        });
+        wrap.addEventListener('mouseleave', function () {
+            var cur = wrap.querySelector('input[name="soSao"]:checked');
+            paint(cur ? parseInt(cur.value, 10) : 5);
+        });
+        var init = wrap.querySelector('input[name="soSao"]:checked');
+        paint(init ? parseInt(init.value, 10) : 5);
+    })();
 
     function buyNow() {
         var form = document.getElementById('addCartForm');

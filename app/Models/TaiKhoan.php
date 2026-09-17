@@ -87,12 +87,12 @@ class TaiKhoan extends Authenticatable
 
         if ($route === 'staff.dashboard') {
             foreach (Quyen::STAFF_PERMISSIONS as $permission) {
-                if (! $this->hasPermission($permission)) {
-                    return false;
+                if ($this->hasPermission($permission)) {
+                    return true;
                 }
             }
 
-            return true;
+            return false;
         }
 
         foreach (Quyen::ROUTE_PERMISSIONS as $pattern => $permissions) {

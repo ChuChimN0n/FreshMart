@@ -98,6 +98,7 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'permission'])->grou
     Route::post('/danh-muc/them', [DanhMucController::class, 'store'])->name('danhmuc.store');
     Route::get('/danh-muc/{danhmuc}/sua', [DanhMucController::class, 'edit'])->name('danhmuc.edit');
     Route::put('/danh-muc/{danhmuc}', [DanhMucController::class, 'update'])->name('danhmuc.update');
+    Route::delete('/danh-muc/{danhmuc}', [DanhMucController::class, 'destroy'])->name('danhmuc.destroy');
 
     // San pham
     Route::get('/san-pham', [SanPhamController::class, 'index'])->name('sanpham.index');
@@ -105,6 +106,7 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'permission'])->grou
     Route::post('/san-pham/them', [SanPhamController::class, 'store'])->name('sanpham.store');
     Route::get('/san-pham/{sanpham}/sua', [SanPhamController::class, 'edit'])->name('sanpham.edit');
     Route::put('/san-pham/{sanpham}', [SanPhamController::class, 'update'])->name('sanpham.update');
+    Route::delete('/san-pham/{sanpham}', [SanPhamController::class, 'destroy'])->name('sanpham.destroy');
 
     // Don hang
     Route::get('/don-hang', [DonHangController::class, 'staffIndex'])->name('donhang.index');

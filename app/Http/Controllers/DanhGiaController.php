@@ -65,11 +65,4 @@ class DanhGiaController extends Controller
 
         return view('nhanvien.danhgia.index', compact('danhGias'));
     }
-
-    public function destroy(DanhGia $danhgia)
-    {
-        $danhgia->delete();
-
-        return back()->with('success', 'Đã xóa đánh giá!');
-    }
 }

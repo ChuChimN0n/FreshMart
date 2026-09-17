@@ -49,6 +49,11 @@
                 </td>
                 <td class="px-4 py-2">
                     <a href="{{ route('staff.sanpham.edit', $sp) }}" class="text-blue-600 hover:underline">Sửa</a>
+                    <form method="POST" action="{{ route('staff.sanpham.destroy', $sp) }}" class="inline" data-confirm="Xóa sản phẩm {{ $sp->tenSP }}?">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:underline ml-2">Xóa</button>
+                    </form>
                 </td>
             </tr>
             @empty

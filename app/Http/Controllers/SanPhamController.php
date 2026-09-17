@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\DanhMuc;
+use App\Models\GioHang;
 use App\Models\NhaCungCap;
 use App\Models\SanPham;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,13 +44,15 @@ class SanPhamController extends Controller
         $request->validate([
             'maNCC' => 'required|exists:NhaCungCap,maNCC',
             'maDM' => 'required|exists:DanhMuc,maDM',
-            'tenSP' => 'required|string|max:150',
+            'tenSP' => 'required|string|max:150|unique:SanPham,tenSP',
             'hinhAnh' => 'nullable|image|max:2048',
             'donVi' => 'required|string|in:kg,quả,bó,gói,chai,hộp,thùng,bịch,cây,củ,cái',
             'giaBan' => 'required|numeric|min:0',
             'moTa' => 'nullable|string',
             'soLuong' => 'required|integer|min:0',
             'trangThai' => ['required', Rule::in([SanPham::DANG_BAN, SanPham::NGUNG_BAN])],
+        ],[
+            'tenSP.unique'=> 'Sản phẩm đã được sử dụng',
         ]);
 
         $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'soLuong', 'trangThai');
@@ -130,5 +134,39 @@ class SanPhamController extends Controller
         }
 
         return redirect()->route('staff.sanpham.index')->with('success', 'Cập nhật sản phẩm thành công!');
+    }
+
+    public function destroy(SanPham $sanpham): RedirectResponse
+    {
+        if ($sanpham->chiTietDonHangs()->exists()) {
+            return back()->with('error', 'Không thể xóa sản phẩm vì đã có trong đơn hàng!');
+        }
+
+        $imagePath = $sanpham->hinhAnh;
+        $maGioHangs = $sanpham->chiTietGioHangs()->pluck('maGioHang')->unique()->all();
+
+        try {
+            DB::transaction(function () use ($sanpham): void {
+                $sanpham->chiTietGioHangs()->delete();
+                $sanpham->danhGias()->delete();
+                $sanpham->delete();
+            });
+        } catch (QueryException $e) {
+            if ($sanpham->chiTietDonHangs()->exists()) {
+                return back()->with('error', 'Không thể xóa sản phẩm vì đã có trong đơn hàng!');
+            }
+
+            throw $e;
+        }
+
+        foreach ($maGioHangs as $maGioHang) {
+            GioHang::whereKey($maGioHang)->first()?->tinhTongTien();
+        }
+
+        if ($imagePath) {
+            Storage::disk('public')->delete(str_starts_with($imagePath, 'sanpham/') ? $imagePath : 'sanpham/'.$imagePath);
+        }
+
+        return back()->with('success', 'Xóa sản phẩm thành công!');
     }
 }

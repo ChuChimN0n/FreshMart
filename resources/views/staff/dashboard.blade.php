@@ -36,12 +36,20 @@
     </div>
 
     <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="font-bold mb-3">Quản lý nhanh</h3>
+            <h3 class="font-bold mb-3">Quản lý nhanh</h3>
         <div class="space-y-2">
+            @if(Auth::user()->hasPermission(\App\Models\Quyen::PRODUCTS))
             <a href="{{ route('staff.sanpham.index') }}" class="block bg-bhx-50 p-3 rounded hover:bg-bhx-100 text-sm font-medium text-bhx-700">Quản lý sản phẩm</a>
+            @endif
+            @if(Auth::user()->hasPermission(\App\Models\Quyen::CATEGORIES))
             <a href="{{ route('staff.danhmuc.index') }}" class="block bg-blue-50 p-3 rounded hover:bg-blue-100 text-sm font-medium text-blue-700">Quản lý danh mục</a>
+            @endif
+            @if(Auth::user()->hasPermission(\App\Models\Quyen::ORDERS))
             <a href="{{ route('staff.donhang.index') }}" class="block bg-purple-50 p-3 rounded hover:bg-purple-100 text-sm font-medium text-purple-700">Quản lý đơn hàng</a>
+            @endif
+            @if(Auth::user()->hasPermission(\App\Models\Quyen::REVIEWS))
             <a href="{{ route('staff.danhgia.index') }}" class="block bg-orange-50 p-3 rounded hover:bg-orange-100 text-sm font-medium text-orange-700">Quản lý đánh giá</a>
+            @endif
         </div>
     </div>
 </div>

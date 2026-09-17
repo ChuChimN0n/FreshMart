@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\TaiKhoan;
 use App\Models\VaiTro;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -23,8 +26,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'tenDangNhap' => 'required',
-            'matKhau' => 'required',
+            'tenDangNhap' => 'required|string|max:100',
+            'matKhau' => 'required|string',
         ]);
 
         $taiKhoan = TaiKhoan::where('tenDangNhap', $credentials['tenDangNhap'])
@@ -68,25 +71,52 @@ class AuthController extends Controller
         $request->validate([
             'hoTen' => 'required|string|max:100',
             'tenDangNhap' => 'required|string|max:100|unique:TaiKhoan,tenDangNhap',
-            'email' => 'required|email|max:100|unique:TaiKhoan,email',
-            'soDienThoai' => 'required|string|max:15',
+            'email' => [
+                'required',
+                'string',
+                'email:rfc,dns',
+                'max:100',
+                'unique:TaiKhoan,email',
+            ],
+            'soDienThoai' => [
+                'required',
+                'string',
+                'unique:TaiKhoan,soDienThoai',
+                'regex:/^(03|05|07|08|09)[0-9]{8}$/',
+            ],
             'diaChi' => 'required|string|max:255',
-            'matKhau' => ['required', 'confirmed', Password::min(6)],
+            'matKhau' => [
+                'required',
+                'confirmed',
+                Password::min(6),
+                'regex:/^\S*$/',
+            ],
+        ], [
+            'tenDangNhap.unique' => 'Tên đăng nhập này đã được sử dụng, vui lòng chọn tên khác.',
+            'email.required' => 'Vui lòng nhập Email.',
+            'soDienThoai.required' => 'Vui lòng nhập số điện thoại.',
+            'email.email' => 'Địa chỉ email không hợp lệ hoặc không tồn tại.',
+            'email.unique' => 'Email này đã được sử dụng.',
+            'soDienThoai.unique' => 'Số điện thoại này đã được sử dụng.',
+            'soDienThoai.regex' => 'Số điện thoại không đúng định dạng (phải gồm 10 chữ số hợp lệ tại Việt Nam).',
         ]);
 
-        $taiKhoan = TaiKhoan::create([
-            'maVT' => VaiTro::KHACH_HANG_ID,
-            'hoTen' => $request->hoTen,
-            'tenDangNhap' => $request->tenDangNhap,
-            'matKhau' => $request->matKhau,
-            'email' => $request->email,
-            'soDienThoai' => $request->soDienThoai,
-            'diaChi' => $request->diaChi,
-            'trangThai' => 'HOAT_DONG',
-        ]);
+        $taiKhoan = DB::transaction(function () use ($request): TaiKhoan {
+            $taiKhoan = TaiKhoan::create([
+                'maVT' => VaiTro::KHACH_HANG_ID,
+                'hoTen' => $request->hoTen,
+                'tenDangNhap' => $request->tenDangNhap,
+                'matKhau' => Hash::make($request->matKhau),
+                'email' => $request->email,
+                'soDienThoai' => $request->soDienThoai,
+                'diaChi' => $request->diaChi,
+                'trangThai' => 'HOAT_DONG',
+            ]);
 
-        // Tao gio hang trong cho khach hang moi
-        $taiKhoan->gioHang()->create(['tongTien' => 0]);
+            $taiKhoan->gioHang()->create(['tongTien' => 0]);
+
+            return $taiKhoan;
+        });
 
         Auth::login($taiKhoan);
         $request->session()->regenerate();
@@ -105,9 +135,27 @@ class AuthController extends Controller
 
         $request->validate([
             'hoTen' => 'required|string|max:100',
-            'email' => 'required|email|max:100|unique:TaiKhoan,email,'.$user->maTK.',maTK',
-            'soDienThoai' => 'required|string|max:15',
+            'email' => [
+                'required',
+                'string',
+                'email:rfc,dns',
+                'max:100',
+                Rule::unique('TaiKhoan', 'email')->ignore($user->maTK, 'maTK'),
+            ],
+            'soDienThoai' => [
+                'required',
+                'string',
+                Rule::unique('TaiKhoan', 'soDienThoai')->ignore($user->maTK, 'maTK'),
+                'regex:/^(03|05|07|08|09)[0-9]{8}$/',
+            ],
             'diaChi' => 'required|string|max:255',
+        ], [
+            'email.required' => 'Vui lòng nhập Email.',
+            'soDienThoai.required' => 'Vui lòng nhập số điện thoại.',
+            'email.email' => 'Địa chỉ email không hợp lệ hoặc không tồn tại.',
+            'email.unique' => 'Email này đã được sử dụng.',
+            'soDienThoai.unique' => 'Số điện thoại này đã được sử dụng.',
+            'soDienThoai.regex' => 'Số điện thoại không đúng định dạng (phải gồm 10 chữ số hợp lệ tại Việt Nam).',
         ]);
 
         $user->update($request->only('hoTen', 'email', 'soDienThoai', 'diaChi'));
@@ -124,7 +172,16 @@ class AuthController extends Controller
     {
         $request->validate([
             'matKhau_hien_tai' => 'required',
-            'matKhau_moi' => ['required', 'confirmed', Password::min(6)],
+            'matKhau_moi' => [
+                'required',
+                'confirmed',
+                Password::min(6)],
+            'regex:/^\S*$/',
+        ], [
+            'matKhau_hien_tai.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+            'matKhau_moi.required' => 'Vui lòng nhập mật khẩu mới.',
+            'matKhau_moi.confirmed' => 'Xác nhận mật khẩu mới không trùng khớp.',
+            'matKhau_moi.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
         ]);
 
         $user = Auth::user();
@@ -133,21 +190,13 @@ class AuthController extends Controller
             return back()->withErrors(['matKhau_hien_tai' => 'Mật khẩu hiện tại không đúng']);
         }
 
-        $user->update(['matKhau' => $request->matKhau_moi]);
+        $user->update(['matKhau' => Hash::make($request->matKhau_moi)]);
 
         return back()->with('success', 'Đổi mật khẩu thành công!');
     }
 
-    private function redirectByRole()
+    private function redirectByRole(): RedirectResponse
     {
-        $user = Auth::user();
-        if ($user->isAdmin()) {
-            return redirect('/admin/dashboard');
-        }
-        if ($user->isStaff()) {
-            return redirect('/staff/dashboard');
-        }
-
-        return redirect('/');
+        return redirect()->route(Auth::user()->dashboardRoute());
     }
 }

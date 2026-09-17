@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(DemoDataSeeder::class);
+        $this->call(RolePermissionSeeder::class);
 
         // Seed TaiKhoan (neu chua co)
         if (DB::table('TaiKhoan')->count() === 0) {
@@ -75,5 +75,7 @@ class DatabaseSeeder extends Seeder
                 ['maNCC' => 1, 'maDM' => 3, 'tenSP' => 'Rau muống', 'hinhAnh' => 'raumuong.jpg', 'giaBan' => 10000, 'moTa' => 'Rau muống tươi', 'soLuong' => 50, 'trangThai' => 'DANG_BAN'],
             ]);
         }
+
+        $this->call(DemoDataSeeder::class);
     }
 }

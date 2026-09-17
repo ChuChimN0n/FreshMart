@@ -5,7 +5,10 @@
 </h1>
 
 <?php if($gioHang && $gioHang->chiTietGioHangs->count() > 0): ?>
-<div class="bhx-card overflow-hidden">
+<?php if($pricesChanged): ?>
+<p class="mb-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">Giá sản phẩm đã thay đổi. Giỏ hàng đang hiển thị giá bán hiện tại.</p>
+<?php endif; ?>
+<div class="bhx-card overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-bhx-600 text-white">
             <tr>
@@ -21,8 +24,8 @@
             <tr class="border-t hover:bg-bhx-50/50">
                 <td class="px-4 py-3">
                     <div class="flex items-center gap-3">
-                        <?php if($ct->sanPham->hinhAnh): ?>
-                            <img src="<?php echo e(asset('storage/'.$ct->sanPham->hinhAnh)); ?>" class="w-14 h-14 object-cover rounded-lg">
+                        <?php if($ct->sanPham?->hinhAnh): ?>
+                            <img src="<?php echo e(asset('storage/'.$ct->sanPham->hinhAnh)); ?>" alt="<?php echo e($ct->sanPham->tenSP); ?>" class="w-14 h-14 object-cover rounded-lg">
                         <?php else: ?>
                             <div class="w-14 h-14 bg-bhx-50 flex items-center justify-center rounded-lg text-bhx-300 text-xl"><i class="bi bi-basket"></i></div>
                         <?php endif; ?>
@@ -80,4 +83,5 @@
 </div>
 <?php endif; ?>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\tools\laragon\www\laravel-FreshVege\resources\views\giohang\index.blade.php ENDPATH**/ ?>

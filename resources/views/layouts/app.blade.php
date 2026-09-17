@@ -30,7 +30,7 @@
 
         /* Mobile menu */
         .mobile-nav { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-        .mobile-nav.open { max-height: 500px; }
+        .mobile-nav.open { max-height: calc(100dvh - 160px); overflow-y: auto; }
         .mobile-nav a, .mobile-nav button { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: 0.875rem; color: rgba(255,255,255,0.9); border-radius: 8px; transition: background 0.12s ease; }
         .mobile-nav a:hover, .mobile-nav button:hover { background: rgba(255,255,255,0.1); }
         .mobile-nav a.active { background: rgba(255,255,255,0.15); color: #fff; }
@@ -67,14 +67,16 @@
                 {{-- Right: Auth --}}
                 <div class="flex items-center gap-2 ml-auto shrink-0">
                     @auth
-                        <div class="hidden lg:block">
-                            <a href="{{ route('giohang.index') }}" class="nav-link-sm">
-                                <i class="bi bi-cart3 text-lg"></i>
-                                @if($cartCount > 0)
-                                    <span class="cart-badge">{{ $cartCount }}</span>
-                                @endif
-                            </a>
-                        </div>
+                        @if(Auth::user()->isCustomer())
+                            <div class="hidden lg:block">
+                                <a href="{{ route('giohang.index') }}" class="nav-link-sm">
+                                    <i class="bi bi-cart3 text-lg"></i>
+                                    @if($cartCount > 0)
+                                        <span class="cart-badge">{{ $cartCount }}</span>
+                                    @endif
+                                </a>
+                            </div>
+                        @endif
 
                         {{-- Desktop user dropdown --}}
                         <div class="user-dd hidden lg:block" id="userDropdown">
@@ -88,12 +90,11 @@
                                     <p class="font-medium text-gray-800 text-sm">{{ Auth::user()->hoTen }}</p>
                                     <p class="text-[11px] text-gray-400 truncate">{{ Auth::user()->email }}</p>
                                 </div>
-                                @if(Auth::user()->isAdmin())
-                                    <a href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2 text-gray-400"></i> Dashboard</a>
-                                @elseif(Auth::user()->isStaff())
-                                    <a href="{{ route('staff.dashboard') }}"><i class="bi bi-speedometer2 text-gray-400"></i> Dashboard</a>
-                                @else
-                                    <a href="{{ route('profile') }}"><i class="bi bi-person text-gray-400"></i> Thông tin cá nhân</a>
+                                @if($managementLinks->isNotEmpty())
+                                    <a href="{{ route(Auth::user()->dashboardRoute()) }}"><i class="bi bi-speedometer2 text-gray-400"></i> Quản lý</a>
+                                @endif
+                                <a href="{{ route('profile') }}"><i class="bi bi-person text-gray-400"></i> Thông tin cá nhân</a>
+                                @if(Auth::user()->isCustomer())
                                     <a href="{{ route('donhang.index') }}"><i class="bi bi-receipt text-gray-400"></i> Đơn hàng của tôi</a>
                                 @endif
                                 <a href="{{ route('change-password') }}"><i class="bi bi-key text-gray-400"></i> Đổi mật khẩu</a>
@@ -112,9 +113,11 @@
                     @endauth
 
                     {{-- Mobile hamburger --}}
-                    <button onclick="toggleMobileMenu()" class="lg:hidden text-white text-lg focus:outline-none p-2 rounded-lg hover:bg-white/10 transition" id="hamburger">
+                    @auth
+                    <button onclick="toggleMobileMenu()" class="lg:hidden text-white text-lg focus:outline-none p-2 rounded-lg hover:bg-white/10 transition" id="hamburger" aria-label="Mở menu" aria-controls="mobileMenu" aria-expanded="false">
                         <i class="bi bi-list" id="hamburgerIcon"></i>
                     </button>
+                    @endauth
                 </div>
             </div>
 
@@ -147,39 +150,8 @@
                         <a href="{{ route('donhang.index') }}" class="nav-link-sm {{ request()->routeIs('donhang.*') ? 'active' : '' }}">
                             <i class="bi bi-receipt"></i> Đơn hàng
                         </a>
-                    @elseif(Auth::user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link-sm {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                        <a href="{{ route('admin.baocao.index') }}" class="nav-link-sm {{ request()->routeIs('admin.baocao.*') ? 'active' : '' }}">
-                            <i class="bi bi-bar-chart"></i> Báo cáo
-                        </a>
-                        <a href="{{ route('admin.nhacungcap.index') }}" class="nav-link-sm {{ request()->routeIs('admin.nhacungcap.*') ? 'active' : '' }}">
-                            <i class="bi bi-truck"></i> NCC
-                        </a>
-                        <a href="{{ route('admin.taikhoan.index') }}" class="nav-link-sm {{ request()->routeIs('admin.taikhoan.*') ? 'active' : '' }}">
-                            <i class="bi bi-people"></i> Tài khoản
-                        </a>
-                        <a href="{{ route('admin.vaitro.index') }}" class="nav-link-sm {{ request()->routeIs('admin.vaitro.*') ? 'active' : '' }}">
-                            <i class="bi bi-shield-lock"></i> Vai trò
-                        </a>
-                    @elseif(Auth::user()->isStaff())
-                        <a href="{{ route('staff.dashboard') }}" class="nav-link-sm {{ request()->routeIs('staff.dashboard') ? 'active' : '' }}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                        <a href="{{ route('staff.sanpham.index') }}" class="nav-link-sm {{ request()->routeIs('staff.sanpham.*') ? 'active' : '' }}">
-                            <i class="bi bi-box-seam"></i> Sản phẩm
-                        </a>
-                        <a href="{{ route('staff.danhmuc.index') }}" class="nav-link-sm {{ request()->routeIs('staff.danhmuc.*') ? 'active' : '' }}">
-                            <i class="bi bi-tags"></i> Danh mục
-                        </a>
-                        <a href="{{ route('staff.donhang.index') }}" class="nav-link-sm {{ request()->routeIs('staff.donhang.*') ? 'active' : '' }}">
-                            <i class="bi bi-receipt"></i> Đơn hàng
-                        </a>
-                        <a href="{{ route('staff.danhgia.index') }}" class="nav-link-sm {{ request()->routeIs('staff.danhgia.*') ? 'active' : '' }}">
-                            <i class="bi bi-star"></i> Đánh giá
-                        </a>
                     @endif
+                    @include('layouts.management-links')
                 @else
                     <a href="{{ route('home') }}" class="nav-link-sm {{ request()->routeIs('home') ? 'active' : '' }}">
                         <i class="bi bi-house-door"></i> Trang chủ
@@ -206,41 +178,8 @@
                         <i class="bi bi-receipt"></i> Đơn hàng
                     </a>
                     <div class="border-t border-white/10 my-1.5"></div>
-                @elseif(Auth::user()->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a href="{{ route('admin.baocao.index') }}" class="{{ request()->routeIs('admin.baocao.*') ? 'active' : '' }}">
-                        <i class="bi bi-bar-chart"></i> Báo cáo
-                    </a>
-                    <a href="{{ route('admin.nhacungcap.index') }}" class="{{ request()->routeIs('admin.nhacungcap.*') ? 'active' : '' }}">
-                        <i class="bi bi-truck"></i> Nhà cung cấp
-                    </a>
-                    <a href="{{ route('admin.taikhoan.index') }}" class="{{ request()->routeIs('admin.taikhoan.*') ? 'active' : '' }}">
-                        <i class="bi bi-people"></i> Tài khoản
-                    </a>
-                    <a href="{{ route('admin.vaitro.index') }}" class="{{ request()->routeIs('admin.vaitro.*') ? 'active' : '' }}">
-                        <i class="bi bi-shield-lock"></i> Vai trò
-                    </a>
-                    <div class="border-t border-white/10 my-1.5"></div>
-                @elseif(Auth::user()->isStaff())
-                    <a href="{{ route('staff.dashboard') }}" class="{{ request()->routeIs('staff.dashboard') ? 'active' : '' }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a href="{{ route('staff.sanpham.index') }}" class="{{ request()->routeIs('staff.sanpham.*') ? 'active' : '' }}">
-                        <i class="bi bi-box-seam"></i> Sản phẩm
-                    </a>
-                    <a href="{{ route('staff.danhmuc.index') }}" class="{{ request()->routeIs('staff.danhmuc.*') ? 'active' : '' }}">
-                        <i class="bi bi-tags"></i> Danh mục
-                    </a>
-                    <a href="{{ route('staff.donhang.index') }}" class="{{ request()->routeIs('staff.donhang.*') ? 'active' : '' }}">
-                        <i class="bi bi-receipt"></i> Đơn hàng
-                    </a>
-                    <a href="{{ route('staff.danhgia.index') }}" class="{{ request()->routeIs('staff.danhgia.*') ? 'active' : '' }}">
-                        <i class="bi bi-star"></i> Đánh giá
-                    </a>
-                    <div class="border-t border-white/10 my-1.5"></div>
                 @endif
+                @include('layouts.management-links', ['mobile' => true])
 
                 <a href="{{ route('profile') }}"><i class="bi bi-person"></i> Thông tin cá nhân</a>
                 <a href="{{ route('change-password') }}"><i class="bi bi-key"></i> Đổi mật khẩu</a>
@@ -338,8 +277,11 @@
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             const icon = document.getElementById('hamburgerIcon');
+            const button = document.getElementById('hamburger');
+            if (!menu || !icon || !button) return;
             menu.classList.toggle('open');
             icon.className = menu.classList.contains('open') ? 'bi bi-x-lg' : 'bi bi-list';
+            button.setAttribute('aria-expanded', String(menu.classList.contains('open')));
         }
 
         function toggleUserDropdown() {

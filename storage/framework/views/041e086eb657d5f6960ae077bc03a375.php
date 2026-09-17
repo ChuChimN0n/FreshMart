@@ -10,7 +10,7 @@
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Tìm</button>
 </form>
 
-<div class="bg-white rounded-lg shadow overflow-hidden">
+<div class="bg-white rounded-lg shadow overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-gray-100">
             <tr>
@@ -32,6 +32,11 @@
                 <td class="px-4 py-2"><?php echo e($ncc->diaChi); ?></td>
                 <td class="px-4 py-2">
                     <a href="<?php echo e(route('admin.nhacungcap.edit', $ncc)); ?>" class="text-blue-600 hover:underline">Sửa</a>
+                    <form method="POST" action="<?php echo e(route('admin.nhacungcap.destroy', $ncc)); ?>" class="inline" data-confirm="Xóa nhà cung cấp <?php echo e($ncc->tenNCC); ?>?">
+                        <?php echo csrf_field(); ?>
+                        <?php echo method_field('DELETE'); ?>
+                        <button type="submit" class="text-red-600 hover:underline ml-2">Xóa</button>
+                    </form>
                 </td>
             </tr>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>

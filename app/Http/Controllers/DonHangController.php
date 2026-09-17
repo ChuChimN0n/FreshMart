@@ -6,6 +6,8 @@ use App\Models\ChiTietDonHang;
 use App\Models\DanhGia;
 use App\Models\DonHang;
 use App\Models\SanPham;
+use App\Models\TaiKhoan;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,19 +23,12 @@ class DonHangController extends Controller
             return redirect()->route('giohang.index')->with('error', 'Giỏ hàng trống!');
         }
 
-        // Sync gia hien tai vao memory de hien thi chinh xac
-        foreach ($gioHang->chiTietGioHangs as $ct) {
-            if ($ct->sanPham) {
-                $ct->donGia = $ct->sanPham->giaBan;
-                $ct->thanhTien = $ct->soLuong * $ct->donGia;
-            }
-        }
-        $gioHang->tongTien = $gioHang->chiTietGioHangs->sum('thanhTien');
+        $pricesChanged = $gioHang->applyCurrentPrices();
 
-        return view('donhang.checkout', compact('gioHang'));
+        return view('donhang.checkout', compact('gioHang', 'pricesChanged'));
     }
 
-    public function placeOrder(Request $request)
+    public function placeOrder(Request $request): RedirectResponse
     {
         $request->validate([
             'tenNguoiNhan' => 'required|string|max:100',
@@ -42,33 +37,28 @@ class DonHangController extends Controller
         ]);
 
         $user = Auth::user();
-        $gioHang = $user->gioHang()->with('chiTietGioHangs.sanPham')->first();
-
-        if (! $gioHang || $gioHang->chiTietGioHangs->isEmpty()) {
-            return redirect()->route('giohang.index')->with('error', 'Giỏ hàng trống!');
-        }
-
-        // Kiem tra ton kho + trang thai
-        foreach ($gioHang->chiTietGioHangs as $ct) {
-            if (! $ct->sanPham || $ct->sanPham->trangThai !== SanPham::DANG_BAN) {
-                return back()->with('error', 'Sản phẩm trong giỏ hiện không còn bán!');
-            }
-            if ($ct->sanPham->soLuong < $ct->soLuong) {
-                return back()->with('error', "Sản phẩm {$ct->sanPham->tenSP} chỉ còn {$ct->sanPham->soLuong}!");
-            }
-        }
-
         try {
-            DB::transaction(function () use ($user, $gioHang, $request) {
+            DB::transaction(function () use ($user, $request): void {
+                $account = TaiKhoan::whereKey($user->maTK)->lockForUpdate()->firstOrFail();
+                if (! $account->isActive()) {
+                    throw new \DomainException('Tài khoản đã bị khóa!');
+                }
+
+                $gioHang = $account->gioHang()->lockForUpdate()->first();
+                $details = $gioHang?->chiTietGioHangs()->orderBy('maSP')->lockForUpdate()->get();
+                if (! $details || $details->isEmpty()) {
+                    throw new \DomainException('Giỏ hàng trống hoặc đã được đặt hàng!');
+                }
+
                 $tongTien = 0;
                 $chiTietData = [];
 
-                foreach ($gioHang->chiTietGioHangs as $ct) {
+                foreach ($details as $ct) {
                     $sanPham = SanPham::whereKey($ct->maSP)->lockForUpdate()->first();
 
-                    if (! $sanPham || $sanPham->trangThai !== SanPham::DANG_BAN || $sanPham->soLuong < $ct->soLuong) {
-                        $ten = $ct->sanPham->tenSP ?? 'Sản phẩm';
-                        throw new \RuntimeException("Sản phẩm {$ten} hiện không còn bán hoặc hết hàng!");
+                    if (! $sanPham || $sanPham->trangThai !== SanPham::DANG_BAN || $ct->soLuong < 1 || $sanPham->soLuong < $ct->soLuong) {
+                        $ten = $sanPham->tenSP ?? 'Sản phẩm';
+                        throw new \DomainException("Sản phẩm {$ten} hiện không còn bán hoặc không đủ số lượng!");
                     }
 
                     $thanhtien = $ct->soLuong * $sanPham->giaBan;
@@ -105,9 +95,13 @@ class DonHangController extends Controller
                 // Xoa gio hang
                 $gioHang->chiTietGioHangs()->delete();
                 $gioHang->update(['tongTien' => 0]);
-            });
+            }, 3);
+        } catch (\DomainException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
         } catch (\Throwable $e) {
-            return back()->with('error', $e->getMessage());
+            report($e);
+
+            return back()->withInput()->with('error', 'Chưa thể đặt hàng. Vui lòng thử lại sau!');
         }
 
         return redirect()->route('donhang.index')->with('success', 'Đặt hàng thành công!');
@@ -137,26 +131,15 @@ class DonHangController extends Controller
         return view('donhang.detail', ['donHang' => $donhang, 'daDanhGia' => $daDanhGia]);
     }
 
-    public function cancel(DonHang $donhang)
+    public function cancel(DonHang $donhang): RedirectResponse
     {
         if ($donhang->maTK !== Auth::id()) {
             abort(403);
         }
 
-        if (! $donhang->canCancel()) {
+        if (! $donhang->transitionTo(DonHang::DA_HUY, customerCancellation: true)) {
             return back()->with('error', 'Đơn hàng không thể hủy!');
         }
-
-        DB::transaction(function () use ($donhang) {
-            // Hoàn lại tồn kho
-            $donhang->load('chiTietDonHangs.sanPham');
-            foreach ($donhang->chiTietDonHangs as $ct) {
-                if ($ct->sanPham) {
-                    $ct->sanPham->increment('soLuong', $ct->soLuong);
-                }
-            }
-            $donhang->update(['trangThai' => DonHang::DA_HUY]);
-        });
 
         return back()->with('success', 'Đã hủy đơn hàng!');
     }
@@ -187,7 +170,7 @@ class DonHangController extends Controller
         return view('nhanvien.donhang.detail', ['donHang' => $donhang]);
     }
 
-    public function updateStatus(Request $request, DonHang $donhang)
+    public function updateStatus(Request $request, DonHang $donhang): RedirectResponse
     {
         $request->validate([
             'trangThai' => ['required', Rule::in([
@@ -198,27 +181,9 @@ class DonHangController extends Controller
             ])],
         ]);
 
-        $validTransitions = DonHang::VALID_TRANSITIONS;
-
-        $current = $donhang->trangThai;
-        $next = $request->trangThai;
-
-        if (! isset($validTransitions[$current]) || ! in_array($next, $validTransitions[$current])) {
+        if (! $donhang->transitionTo($request->string('trangThai')->toString())) {
             return back()->with('error', 'Không thể chuyển trạng thái này!');
         }
-
-        DB::transaction(function () use ($donhang, $next) {
-            // Hoan ton kho neu huy
-            if ($next === DonHang::DA_HUY) {
-                $donhang->load('chiTietDonHangs.sanPham');
-                foreach ($donhang->chiTietDonHangs as $ct) {
-                    if ($ct->sanPham) {
-                        $ct->sanPham->increment('soLuong', $ct->soLuong);
-                    }
-                }
-            }
-            $donhang->update(['trangThai' => $next]);
-        });
 
         return back()->with('success', 'Cập nhật trạng thái thành công!');
     }

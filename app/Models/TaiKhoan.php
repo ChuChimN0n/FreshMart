@@ -6,12 +6,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Str;
 
 class TaiKhoan extends Authenticatable
 {
     protected $table = 'TaiKhoan';
 
     protected $primaryKey = 'maTK';
+
+    protected $authPasswordName = 'matKhau';
 
     public $timestamps = false;
 
@@ -28,6 +31,7 @@ class TaiKhoan extends Authenticatable
 
     protected $hidden = [
         'matKhau',
+        'remember_token',
     ];
 
     protected function casts(): array
@@ -59,11 +63,60 @@ class TaiKhoan extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
+        if (! $this->isActive()) {
+            return false;
+        }
+
+        if ($this->isAdmin() && in_array($permission, [...Quyen::ADMIN_PERMISSIONS, ...Quyen::STAFF_PERMISSIONS], true)) {
+            return true;
+        }
+
+        $this->loadMissing('vaiTro.quyens');
         if (! $this->vaiTro) {
             return false;
         }
 
         return $this->vaiTro->quyens->contains('tenQuyen', $permission);
+    }
+
+    public function canAccessRoute(string $route): bool
+    {
+        if ($route === 'admin.dashboard') {
+            return $this->isActive() && $this->isAdmin();
+        }
+
+        if ($route === 'staff.dashboard') {
+            foreach (Quyen::STAFF_PERMISSIONS as $permission) {
+                if (! $this->hasPermission($permission)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        foreach (Quyen::ROUTE_PERMISSIONS as $pattern => $permissions) {
+            if (Str::is($pattern, $route)) {
+                foreach ($permissions as $permission) {
+                    if ($this->hasPermission($permission)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function dashboardRoute(): string
+    {
+        foreach (config('navigation.management', []) as $item) {
+            if ($this->canAccessRoute($item['route'])) {
+                return $item['route'];
+            }
+        }
+
+        return 'home';
     }
 
     public function isAdmin(): bool

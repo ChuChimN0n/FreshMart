@@ -12,7 +12,6 @@ use App\Http\Controllers\NhaCungCapController;
 use App\Http\Controllers\SanPhamController;
 use App\Http\Controllers\TaiKhoanController;
 use App\Http\Controllers\VaiTroController;
-use App\Models\VaiTro;
 use Illuminate\Support\Facades\Route;
 
 // ========== PUBLIC ==========
@@ -21,20 +20,23 @@ Route::get('/san-pham/{sanpham}', [HomeController::class, 'show'])->name('home.s
 
 // ========== AUTH ==========
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
 
-// ========== GIO HANG (login required) ==========
+// ========== HO SO CA NHAN (mac dinh moi tai khoan dang nhap) ==========
 Route::middleware('auth')->group(function () {
     Route::get('/ho-so', [AuthController::class, 'showProfile'])->name('profile');
     Route::put('/ho-so', [AuthController::class, 'updateProfile'])->name('profile.update');
 
     Route::get('/doi-mat-khau', [AuthController::class, 'showChangePasswordForm'])->name('change-password');
     Route::post('/doi-mat-khau', [AuthController::class, 'changePassword']);
+});
 
+// ========== MUA SAM (chi vai tro nhom khach hang) ==========
+Route::middleware(['auth', 'permission'])->group(function () {
     Route::get('/gio-hang', [GioHangController::class, 'index'])->name('giohang.index');
     Route::post('/gio-hang/them', [GioHangController::class, 'add'])->name('giohang.add');
     Route::put('/gio-hang/{chitiet}', [GioHangController::class, 'update'])->name('giohang.update');
@@ -52,7 +54,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // ========== ADMIN (role:1) ==========
-Route::prefix('admin')->name('admin.')->middleware(['role:'.VaiTro::ADMIN_ID])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
 
     // Nha cung cap
@@ -61,6 +63,7 @@ Route::prefix('admin')->name('admin.')->middleware(['role:'.VaiTro::ADMIN_ID])->
     Route::post('/nha-cung-cap/them', [NhaCungCapController::class, 'store'])->name('nhacungcap.store');
     Route::get('/nha-cung-cap/{nhacungcap}/sua', [NhaCungCapController::class, 'edit'])->name('nhacungcap.edit');
     Route::put('/nha-cung-cap/{nhacungcap}', [NhaCungCapController::class, 'update'])->name('nhacungcap.update');
+    Route::delete('/nha-cung-cap/{nhacungcap}', [NhaCungCapController::class, 'destroy'])->name('nhacungcap.destroy');
 
     // Tai khoan
     Route::get('/tai-khoan', [TaiKhoanController::class, 'index'])->name('taikhoan.index');
@@ -76,6 +79,7 @@ Route::prefix('admin')->name('admin.')->middleware(['role:'.VaiTro::ADMIN_ID])->
     Route::post('/vai-tro/them', [VaiTroController::class, 'store'])->name('vaitro.store');
     Route::get('/vai-tro/{vaitro}/sua', [VaiTroController::class, 'edit'])->name('vaitro.edit');
     Route::put('/vai-tro/{vaitro}', [VaiTroController::class, 'update'])->name('vaitro.update');
+    Route::delete('/vai-tro/{vaitro}', [VaiTroController::class, 'destroy'])->name('vaitro.destroy');
 
     // Bao cao
     Route::get('/bao-cao', [BaoCaoController::class, 'index'])->name('baocao.index');
@@ -85,7 +89,7 @@ Route::prefix('admin')->name('admin.')->middleware(['role:'.VaiTro::ADMIN_ID])->
 });
 
 // ========== STAFF (role:2) ==========
-Route::prefix('staff')->name('staff.')->middleware(['role:'.VaiTro::STAFF_ID])->group(function () {
+Route::prefix('staff')->name('staff.')->middleware(['auth', 'permission'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'staffDashboard'])->name('dashboard');
 
     // Danh muc

@@ -25,12 +25,13 @@ class DanhMuc extends Model
 
     public function scopeOrdered(Builder $query): Builder
     {
-        $order = implode(',', array_map(
-            fn (string $name): string => "'".str_replace("'", "''", $name)."'",
-            self::DISPLAY_ORDER
-        ));
+        $cases = [];
+        foreach (self::DISPLAY_ORDER as $position => $name) {
+            $cases[] = 'WHEN ? THEN '.($position + 1);
+        }
 
-        return $query->orderByRaw("FIELD(tenDM, {$order}) ASC, tenDM ASC");
+        return $query->orderByRaw('CASE tenDM '.implode(' ', $cases).' ELSE 0 END', self::DISPLAY_ORDER)
+            ->orderBy('tenDM');
     }
 
     public function sanPhams(): HasMany

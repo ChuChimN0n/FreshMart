@@ -1,9 +1,14 @@
 @extends('layouts.app')
 @section('title', 'Đơn hàng của tôi')
 @section('content')
-<h1 class="text-2xl font-bold mb-4 flex items-center gap-2">
-    <i class="bi bi-receipt text-bhx-500"></i> Đơn hàng của tôi
-</h1>
+<div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold flex items-center gap-2">
+        <i class="bi bi-receipt text-bhx-500"></i> Đơn hàng của tôi
+    </h1>
+    <a href="{{ route('giohang.index') }}" class="bhx-btn-orange !px-4 !py-2">
+        Đặt hàng <i class="bi bi-arrow-right"></i>
+    </a>
+</div>
 
 <div class="bhx-card overflow-hidden">
     <table class="w-full text-sm">

@@ -14,7 +14,15 @@
                 <h3 class="font-bold text-lg">{{ $vt->tenVT }}</h3>
                 <p class="text-sm text-gray-500">{{ $vt->moTa }}</p>
             </div>
-            <a href="{{ route('admin.vaitro.edit', $vt) }}" class="text-blue-600 hover:underline text-sm">Sửa</a>
+            <div class="flex gap-3 items-center">
+                <a href="{{ route('admin.vaitro.edit', $vt) }}" class="text-blue-600 hover:underline text-sm">Sửa</a>
+                @if(! in_array($vt->maVT, [\App\Models\VaiTro::ADMIN_ID, \App\Models\VaiTro::STAFF_ID, \App\Models\VaiTro::KHACH_HANG_ID]))
+                <form method="POST" action="{{ route('admin.vaitro.destroy', $vt) }}" class="inline">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="text-red-600 hover:underline text-sm" onclick="return confirm('Xóa vai trò này?')">Xóa</button>
+                </form>
+                @endif
+            </div>
         </div>
         <div class="mt-3 flex flex-wrap gap-2">
             @forelse($vt->quyens as $q)

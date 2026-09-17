@@ -41,8 +41,10 @@ class HomeController extends Controller
     {
         $sanpham->load(['danhMuc', 'nhaCungCap']);
 
-        $danhGias = $sanpham->danhGias()->with('taiKhoan')->orderByDesc('maDanhGia')->get();
-        $trungBinhSao = $danhGias->count() > 0 ? round($danhGias->avg('soSao'), 1) : 0;
+        $danhGias = $sanpham->danhGias()->with('taiKhoan')->orderByDesc('maDanhGia')->paginate(10, ['*'], 'reviews_page');
+        $starCounts = $sanpham->danhGias()->selectRaw('soSao, COUNT(*) AS total')->groupBy('soSao')->pluck('total', 'soSao');
+        $tongDanhGia = $starCounts->sum();
+        $trungBinhSao = $tongDanhGia > 0 ? round($starCounts->map(fn ($count, $stars) => $count * $stars)->sum() / $tongDanhGia, 1) : 0;
 
         $soLuongDaBan = ChiTietDonHang::where('maSP', $sanpham->maSP)
             ->whereHas('donHang', function ($q) {
@@ -50,13 +52,13 @@ class HomeController extends Controller
             })
             ->sum('soLuong');
 
-        $phanTramSao = collect(range(5, 1))->map(function ($sao) use ($danhGias) {
-            $soLuong = $danhGias->where('soSao', $sao)->count();
+        $phanTramSao = collect(range(5, 1))->map(function ($sao) use ($starCounts, $tongDanhGia) {
+            $soLuong = $starCounts->get($sao, 0);
 
             return [
                 'soSao' => $sao,
                 'soLuong' => $soLuong,
-                'phanTram' => $danhGias->count() > 0 ? round($soLuong / $danhGias->count() * 100) : 0,
+                'phanTram' => $tongDanhGia > 0 ? round($soLuong / $tongDanhGia * 100) : 0,
             ];
         })->all();
 
@@ -94,6 +96,7 @@ class HomeController extends Controller
             'sanpham',
             'danhGias',
             'trungBinhSao',
+            'tongDanhGia',
             'soLuongDaBan',
             'phanTramSao',
             'daMua',

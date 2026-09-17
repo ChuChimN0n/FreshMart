@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\DanhMuc;
 use App\Models\NhaCungCap;
 use App\Models\SanPham;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -35,7 +37,7 @@ class SanPhamController extends Controller
         return view('staff.sanpham.create', compact('nhaCungCaps', 'danhMucs'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'maNCC' => 'required|exists:NhaCungCap,maNCC',
@@ -51,11 +53,24 @@ class SanPhamController extends Controller
 
         $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'soLuong', 'trangThai');
 
-        if ($request->hasFile('hinhAnh')) {
-            $data['hinhAnh'] = $request->file('hinhAnh')->store('sanpham', 'public');
-        }
+        $newPath = null;
+        try {
+            if ($request->hasFile('hinhAnh')) {
+                $newPath = $request->file('hinhAnh')->store('sanpham', 'public');
+                if (! $newPath) {
+                    throw new \RuntimeException('Không lưu được ảnh sản phẩm.');
+                }
+                $data['hinhAnh'] = $newPath;
+            }
+            SanPham::create($data);
+        } catch (\Throwable $e) {
+            if ($newPath) {
+                Storage::disk('public')->delete($newPath);
+            }
+            report($e);
 
-        SanPham::create($data);
+            return back()->withInput()->with('error', 'Chưa thể lưu sản phẩm. Vui lòng thử lại!');
+        }
 
         return redirect()->route('staff.sanpham.index')->with('success', 'Thêm sản phẩm thành công!');
     }
@@ -68,7 +83,7 @@ class SanPhamController extends Controller
         return view('staff.sanpham.edit', ['sanPham' => $sanpham, 'nhaCungCaps' => $nhaCungCaps, 'danhMucs' => $danhMucs]);
     }
 
-    public function update(Request $request, SanPham $sanpham)
+    public function update(Request $request, SanPham $sanpham): RedirectResponse
     {
         $request->validate([
             'maNCC' => 'required|exists:NhaCungCap,maNCC',
@@ -84,18 +99,35 @@ class SanPhamController extends Controller
 
         $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'soLuong', 'trangThai');
 
-        if ($request->hasFile('hinhAnh')) {
-            if ($sanpham->hinhAnh) {
-                $oldPath = $sanpham->hinhAnh;
-                if (strpos($oldPath, 'sanpham/') !== 0) {
-                    $oldPath = 'sanpham/'.$oldPath;
+        $newPath = null;
+        try {
+            if ($request->hasFile('hinhAnh')) {
+                $newPath = $request->file('hinhAnh')->store('sanpham', 'public');
+                if (! $newPath) {
+                    throw new \RuntimeException('Không lưu được ảnh sản phẩm.');
                 }
-                Storage::disk('public')->delete($oldPath);
+                $data['hinhAnh'] = $newPath;
             }
-            $data['hinhAnh'] = $request->file('hinhAnh')->store('sanpham', 'public');
+
+            $oldPath = DB::transaction(function () use ($sanpham, $data): ?string {
+                $product = SanPham::whereKey($sanpham->maSP)->lockForUpdate()->firstOrFail();
+                $oldPath = $product->hinhAnh;
+                $product->update($data);
+
+                return $oldPath;
+            }, 3);
+        } catch (\Throwable $e) {
+            if ($newPath) {
+                Storage::disk('public')->delete($newPath);
+            }
+            report($e);
+
+            return back()->withInput()->with('error', 'Chưa thể cập nhật sản phẩm. Ảnh cũ vẫn được giữ lại.');
         }
 
-        $sanpham->update($data);
+        if ($newPath && $oldPath) {
+            Storage::disk('public')->delete(str_starts_with($oldPath, 'sanpham/') ? $oldPath : 'sanpham/'.$oldPath);
+        }
 
         return redirect()->route('staff.sanpham.index')->with('success', 'Cập nhật sản phẩm thành công!');
     }

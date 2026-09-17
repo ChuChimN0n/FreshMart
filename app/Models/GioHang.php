@@ -38,9 +38,27 @@ class GioHang extends Model
 
     public function tinhTongTien(): float
     {
-        $tong = $this->chiTietGioHangs->sum('thanhTien');
+        $tong = $this->chiTietGioHangs()->sum('thanhTien');
         $this->update(['tongTien' => $tong]);
 
         return $tong;
+    }
+
+    public function applyCurrentPrices(): bool
+    {
+        $this->loadMissing('chiTietGioHangs.sanPham');
+        $pricesChanged = false;
+
+        foreach ($this->chiTietGioHangs as $detail) {
+            if ($detail->sanPham) {
+                $pricesChanged = $pricesChanged || $detail->donGia != $detail->sanPham->giaBan;
+                $detail->donGia = $detail->sanPham->giaBan;
+                $detail->thanhTien = $detail->soLuong * $detail->donGia;
+            }
+        }
+
+        $this->tongTien = $this->chiTietGioHangs->sum('thanhTien');
+
+        return $pricesChanged;
     }
 }

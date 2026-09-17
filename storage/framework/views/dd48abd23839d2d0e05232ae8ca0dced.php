@@ -29,6 +29,9 @@ unset($__errorArgs, $__bag); ?>
         </div>
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Quyền</label>
+            <?php if($vaiTro->maVT === \App\Models\VaiTro::ADMIN_ID): ?>
+                <p class="text-sm text-gray-600">Quản lý có toàn bộ quyền quản trị và kế thừa chức năng nhân viên.</p>
+            <?php else: ?>
             <div class="grid grid-cols-2 gap-2">
                 <?php $currentQuyens = old('quyens', $vaiTro->quyens->pluck('maQuyen')->toArray()); ?>
                 <?php $__currentLoopData = $quyens; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $q): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -38,6 +41,23 @@ unset($__errorArgs, $__bag); ?>
                 </label>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
+            <?php endif; ?>
+            <?php $__errorArgs = ['quyens'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-red-500 text-sm mt-1"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            <?php $__errorArgs = ['quyens.*'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-red-500 text-sm mt-1"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
         </div>
         <div class="flex gap-2">
             <button type="submit" class="bg-bhx-500 text-white px-4 py-2 rounded hover:bg-bhx-600">Cập nhật</button>

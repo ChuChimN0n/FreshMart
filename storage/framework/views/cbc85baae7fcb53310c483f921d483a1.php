@@ -30,7 +30,7 @@
 
         /* Mobile menu */
         .mobile-nav { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-        .mobile-nav.open { max-height: 500px; }
+        .mobile-nav.open { max-height: calc(100dvh - 160px); overflow-y: auto; }
         .mobile-nav a, .mobile-nav button { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: 0.875rem; color: rgba(255,255,255,0.9); border-radius: 8px; transition: background 0.12s ease; }
         .mobile-nav a:hover, .mobile-nav button:hover { background: rgba(255,255,255,0.1); }
         .mobile-nav a.active { background: rgba(255,255,255,0.15); color: #fff; }
@@ -67,14 +67,16 @@
                 
                 <div class="flex items-center gap-2 ml-auto shrink-0">
                     <?php if(auth()->guard()->check()): ?>
-                        <div class="hidden lg:block">
-                            <a href="<?php echo e(route('giohang.index')); ?>" class="nav-link-sm">
-                                <i class="bi bi-cart3 text-lg"></i>
-                                <?php if($cartCount > 0): ?>
-                                    <span class="cart-badge"><?php echo e($cartCount); ?></span>
-                                <?php endif; ?>
-                            </a>
-                        </div>
+                        <?php if(Auth::user()->isCustomer()): ?>
+                            <div class="hidden lg:block">
+                                <a href="<?php echo e(route('giohang.index')); ?>" class="nav-link-sm">
+                                    <i class="bi bi-cart3 text-lg"></i>
+                                    <?php if($cartCount > 0): ?>
+                                        <span class="cart-badge"><?php echo e($cartCount); ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            </div>
+                        <?php endif; ?>
 
                         
                         <div class="user-dd hidden lg:block" id="userDropdown">
@@ -88,12 +90,11 @@
                                     <p class="font-medium text-gray-800 text-sm"><?php echo e(Auth::user()->hoTen); ?></p>
                                     <p class="text-[11px] text-gray-400 truncate"><?php echo e(Auth::user()->email); ?></p>
                                 </div>
-                                <?php if(Auth::user()->isAdmin()): ?>
-                                    <a href="<?php echo e(route('admin.dashboard')); ?>"><i class="bi bi-speedometer2 text-gray-400"></i> Dashboard</a>
-                                <?php elseif(Auth::user()->isStaff()): ?>
-                                    <a href="<?php echo e(route('staff.dashboard')); ?>"><i class="bi bi-speedometer2 text-gray-400"></i> Dashboard</a>
-                                <?php else: ?>
-                                    <a href="<?php echo e(route('profile')); ?>"><i class="bi bi-person text-gray-400"></i> Thông tin cá nhân</a>
+                                <?php if($managementLinks->isNotEmpty()): ?>
+                                    <a href="<?php echo e(route(Auth::user()->dashboardRoute())); ?>"><i class="bi bi-speedometer2 text-gray-400"></i> Quản lý</a>
+                                <?php endif; ?>
+                                <a href="<?php echo e(route('profile')); ?>"><i class="bi bi-person text-gray-400"></i> Thông tin cá nhân</a>
+                                <?php if(Auth::user()->isCustomer()): ?>
                                     <a href="<?php echo e(route('donhang.index')); ?>"><i class="bi bi-receipt text-gray-400"></i> Đơn hàng của tôi</a>
                                 <?php endif; ?>
                                 <a href="<?php echo e(route('change-password')); ?>"><i class="bi bi-key text-gray-400"></i> Đổi mật khẩu</a>
@@ -112,9 +113,11 @@
                     <?php endif; ?>
 
                     
-                    <button onclick="toggleMobileMenu()" class="lg:hidden text-white text-lg focus:outline-none p-2 rounded-lg hover:bg-white/10 transition" id="hamburger">
+                    <?php if(auth()->guard()->check()): ?>
+                    <button onclick="toggleMobileMenu()" class="lg:hidden text-white text-lg focus:outline-none p-2 rounded-lg hover:bg-white/10 transition" id="hamburger" aria-label="Mở menu" aria-controls="mobileMenu" aria-expanded="false">
                         <i class="bi bi-list" id="hamburgerIcon"></i>
                     </button>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -147,39 +150,8 @@
                         <a href="<?php echo e(route('donhang.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('donhang.*') ? 'active' : ''); ?>">
                             <i class="bi bi-receipt"></i> Đơn hàng
                         </a>
-                    <?php elseif(Auth::user()->isAdmin()): ?>
-                        <a href="<?php echo e(route('admin.dashboard')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                        <a href="<?php echo e(route('admin.baocao.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('admin.baocao.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-bar-chart"></i> Báo cáo
-                        </a>
-                        <a href="<?php echo e(route('admin.nhacungcap.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('admin.nhacungcap.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-truck"></i> NCC
-                        </a>
-                        <a href="<?php echo e(route('admin.taikhoan.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('admin.taikhoan.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-people"></i> Tài khoản
-                        </a>
-                        <a href="<?php echo e(route('admin.vaitro.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('admin.vaitro.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-shield-lock"></i> Vai trò
-                        </a>
-                    <?php elseif(Auth::user()->isStaff()): ?>
-                        <a href="<?php echo e(route('staff.dashboard')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('staff.dashboard') ? 'active' : ''); ?>">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                        <a href="<?php echo e(route('staff.sanpham.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('staff.sanpham.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-box-seam"></i> Sản phẩm
-                        </a>
-                        <a href="<?php echo e(route('staff.danhmuc.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('staff.danhmuc.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-tags"></i> Danh mục
-                        </a>
-                        <a href="<?php echo e(route('staff.donhang.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('staff.donhang.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-receipt"></i> Đơn hàng
-                        </a>
-                        <a href="<?php echo e(route('staff.danhgia.index')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('staff.danhgia.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-star"></i> Đánh giá
-                        </a>
                     <?php endif; ?>
+                    <?php echo $__env->make('layouts.management-links', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                 <?php else: ?>
                     <a href="<?php echo e(route('home')); ?>" class="nav-link-sm <?php echo e(request()->routeIs('home') ? 'active' : ''); ?>">
                         <i class="bi bi-house-door"></i> Trang chủ
@@ -206,41 +178,8 @@
                         <i class="bi bi-receipt"></i> Đơn hàng
                     </a>
                     <div class="border-t border-white/10 my-1.5"></div>
-                <?php elseif(Auth::user()->isAdmin()): ?>
-                    <a href="<?php echo e(route('admin.dashboard')); ?>" class="<?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a href="<?php echo e(route('admin.baocao.index')); ?>" class="<?php echo e(request()->routeIs('admin.baocao.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-bar-chart"></i> Báo cáo
-                    </a>
-                    <a href="<?php echo e(route('admin.nhacungcap.index')); ?>" class="<?php echo e(request()->routeIs('admin.nhacungcap.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-truck"></i> Nhà cung cấp
-                    </a>
-                    <a href="<?php echo e(route('admin.taikhoan.index')); ?>" class="<?php echo e(request()->routeIs('admin.taikhoan.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-people"></i> Tài khoản
-                    </a>
-                    <a href="<?php echo e(route('admin.vaitro.index')); ?>" class="<?php echo e(request()->routeIs('admin.vaitro.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-shield-lock"></i> Vai trò
-                    </a>
-                    <div class="border-t border-white/10 my-1.5"></div>
-                <?php elseif(Auth::user()->isStaff()): ?>
-                    <a href="<?php echo e(route('staff.dashboard')); ?>" class="<?php echo e(request()->routeIs('staff.dashboard') ? 'active' : ''); ?>">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a href="<?php echo e(route('staff.sanpham.index')); ?>" class="<?php echo e(request()->routeIs('staff.sanpham.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-box-seam"></i> Sản phẩm
-                    </a>
-                    <a href="<?php echo e(route('staff.danhmuc.index')); ?>" class="<?php echo e(request()->routeIs('staff.danhmuc.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-tags"></i> Danh mục
-                    </a>
-                    <a href="<?php echo e(route('staff.donhang.index')); ?>" class="<?php echo e(request()->routeIs('staff.donhang.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-receipt"></i> Đơn hàng
-                    </a>
-                    <a href="<?php echo e(route('staff.danhgia.index')); ?>" class="<?php echo e(request()->routeIs('staff.danhgia.*') ? 'active' : ''); ?>">
-                        <i class="bi bi-star"></i> Đánh giá
-                    </a>
-                    <div class="border-t border-white/10 my-1.5"></div>
                 <?php endif; ?>
+                <?php echo $__env->make('layouts.management-links', ['mobile' => true], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
                 <a href="<?php echo e(route('profile')); ?>"><i class="bi bi-person"></i> Thông tin cá nhân</a>
                 <a href="<?php echo e(route('change-password')); ?>"><i class="bi bi-key"></i> Đổi mật khẩu</a>
@@ -338,8 +277,11 @@
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             const icon = document.getElementById('hamburgerIcon');
+            const button = document.getElementById('hamburger');
+            if (!menu || !icon || !button) return;
             menu.classList.toggle('open');
             icon.className = menu.classList.contains('open') ? 'bi bi-x-lg' : 'bi bi-list';
+            button.setAttribute('aria-expanded', String(menu.classList.contains('open')));
         }
 
         function toggleUserDropdown() {
@@ -365,4 +307,5 @@
         setTimeout(() => { const el = document.getElementById('flash-error'); if (el) el.remove(); }, 5000);
     </script>
 </body>
-</html><?php /**PATH D:\tools\laragon\www\laravel-FreshVege\resources\views\layouts\app.blade.php ENDPATH**/ ?>
+</html>
+<?php /**PATH D:\tools\laragon\www\laravel-FreshVege\resources\views\layouts\app.blade.php ENDPATH**/ ?>

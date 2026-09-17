@@ -4,6 +4,9 @@
     <i class="bi bi-bag-check text-bhx-500"></i> Xác nhận đặt hàng
 </h1>
 
+<?php if($pricesChanged): ?>
+<p class="mb-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">Giá sản phẩm đã thay đổi. Vui lòng kiểm tra tổng tiền hiện tại trước khi đặt hàng.</p>
+<?php endif; ?>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="bhx-card p-5">
         <h2 class="font-bold text-gray-800 mb-3"><i class="bi bi-basket text-bhx-500"></i> Sản phẩm trong giỏ</h2>
@@ -23,12 +26,12 @@
     </div>
 
     <div class="bhx-card p-5">
-        <form method="POST" action="<?php echo e(route('donhang.place')); ?>">
+        <form method="POST" action="<?php echo e(route('donhang.place')); ?>" data-submit-once>
             <?php echo csrf_field(); ?>
             <h2 class="font-bold text-gray-800 mb-3"><i class="bi bi-truck text-bhx-500"></i> Thông tin giao hàng</h2>
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tên người nhận *</label>
-                <input type="text" name="tenNguoiNhan" value="<?php echo e(Auth::user()->hoTen); ?>" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none <?php $__errorArgs = ['tenNguoiNhan'];
+                <input type="text" name="tenNguoiNhan" value="<?php echo e(old('tenNguoiNhan', Auth::user()->hoTen)); ?>" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none <?php $__errorArgs = ['tenNguoiNhan'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -47,7 +50,7 @@ unset($__errorArgs, $__bag); ?>
             </div>
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
-                <input type="text" name="soDienThoai" value="<?php echo e(Auth::user()->soDienThoai); ?>" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none <?php $__errorArgs = ['soDienThoai'];
+                <input type="text" name="soDienThoai" value="<?php echo e(old('soDienThoai', Auth::user()->soDienThoai)); ?>" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none <?php $__errorArgs = ['soDienThoai'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -66,7 +69,7 @@ unset($__errorArgs, $__bag); ?>
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ *</label>
-                <input type="text" name="diaChi" value="<?php echo e(Auth::user()->diaChi); ?>" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none <?php $__errorArgs = ['diaChi'];
+                <input type="text" name="diaChi" value="<?php echo e(old('diaChi', Auth::user()->diaChi)); ?>" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none <?php $__errorArgs = ['diaChi'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -91,4 +94,5 @@ unset($__errorArgs, $__bag); ?>
     </div>
 </div>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\tools\laragon\www\laravel-FreshVege\resources\views\donhang\checkout.blade.php ENDPATH**/ ?>

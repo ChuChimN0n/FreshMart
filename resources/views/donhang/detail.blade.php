@@ -60,23 +60,23 @@
         @php
             $spId = $ct->sanPham->maSP ?? null;
             $spTen = $ct->sanPham->tenSP ?? 'SP đã xóa';
-            $daDanhGia = $daDanhGia->firstWhere('maSP', $spId);
+            $danhGia = $daDanhGia->firstWhere('maSP', $spId);
         @endphp
-        <div class="border rounded-xl p-4 mb-3 {{ $daDanhGia ? 'bg-bhx-50' : '' }}">
+        <div class="border rounded-xl p-4 mb-3 {{ $danhGia ? 'bg-bhx-50' : '' }}">
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div>
                     <span class="font-medium">{{ $spTen }}</span>
                     <span class="text-gray-500 text-sm ml-2">({{ $ct->soLuong }} {{ $ct->sanPham->donVi ?? 'kg' }} × {{ number_format($ct->donGia, 0, ',', '.') }}đ)</span>
                 </div>
 
-                @if($daDanhGia)
-                    <span class="text-bhx-600 text-sm font-medium"><i class="bi bi-check-circle-fill"></i> Đã đánh giá {{ str_repeat('⭐', $daDanhGia->soSao) }}</span>
+                @if($danhGia)
+                    <span class="text-bhx-600 text-sm font-medium"><i class="bi bi-check-circle-fill"></i> Đã đánh giá {{ str_repeat('⭐', $danhGia->soSao) }}</span>
                 @else
                     <button type="button" onclick="toggleReviewForm({{ $spId }})" class="bg-bhx-500 hover:bg-bhx-600 text-white px-3 py-1.5 rounded-lg text-sm transition" id="btn-review-{{ $spId }}">Đánh giá</button>
                 @endif
             </div>
 
-            @if(!$daDanhGia)
+            @if(!$danhGia)
             <form method="POST" action="{{ route('danhgia.store') }}" class="mt-3 hidden" id="form-review-{{ $spId }}">
                 @csrf
                 <input type="hidden" name="maSP" value="{{ $spId }}">

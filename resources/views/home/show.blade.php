@@ -58,9 +58,9 @@
                         <i class="bi {{ $i <= round($trungBinhSao) ? 'bi-star-fill' : 'bi-star' }} text-bhx-yellow"></i>
                     @endfor
                 </span>
-                @if($danhGias->count() > 0)
+                @if($tongDanhGia > 0)
                     <a href="#danh-gia" class="text-xs text-bhx-600 hover:underline font-medium">
-                        {{ number_format($trungBinhSao, 1, ',', '.') }} ({{ $danhGias->count() }} đánh giá)
+                        {{ number_format($trungBinhSao, 1, ',', '.') }} ({{ $tongDanhGia }} đánh giá)
                     </a>
                 @else
                     <span class="text-xs text-gray-400">Chưa có đánh giá</span>
@@ -178,12 +178,12 @@
 <div id="danh-gia" class="mt-10 scroll-mt-32">
     <h2 class="text-xl font-bold flex items-center gap-2">
         <i class="bi bi-chat-left-text text-bhx-500"></i> Đánh giá sản phẩm
-        @if($danhGias->count() > 0)
-            <span class="text-sm font-normal text-gray-400">({{ $danhGias->count() }} đánh giá)</span>
+        @if($tongDanhGia > 0)
+            <span class="text-sm font-normal text-gray-400">({{ $tongDanhGia }} đánh giá)</span>
         @endif
     </h2>
 
-    @if($danhGias->count() > 0)
+    @if($tongDanhGia > 0)
     <div class="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 mt-4">
         <div class="bhx-card p-5 text-center">
             <p class="text-4xl font-extrabold text-gray-900">{{ number_format($trungBinhSao, 1, ',', '.') }}</p>
@@ -192,7 +192,7 @@
                     <i class="bi {{ $i <= round($trungBinhSao) ? 'bi-star-fill' : 'bi-star' }} text-bhx-yellow"></i>
                 @endfor
             </div>
-            <p class="text-xs text-gray-400 mt-2">{{ $danhGias->count() }} lượt đánh giá</p>
+            <p class="text-xs text-gray-400 mt-2">{{ $tongDanhGia }} lượt đánh giá</p>
         </div>
         <div class="bhx-card p-5 space-y-2">
             @foreach($phanTramSao as $row)
@@ -276,6 +276,7 @@
         <p class="text-gray-500 text-sm">Chưa có đánh giá nào cho sản phẩm này.</p>
     </div>
     @endforelse
+    <div class="mt-4">{{ $danhGias->withQueryString()->fragment('danh-gia')->links() }}</div>
 </div>
 
 {{-- Sản phẩm liên quan --}}

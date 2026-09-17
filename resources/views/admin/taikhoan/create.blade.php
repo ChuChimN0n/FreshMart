@@ -23,7 +23,8 @@
             </div>
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
-                <input type="text" name="soDienThoai" value="{{ old('soDienThoai') }}" class="w-full border rounded px-3 py-2" required>
+                <input type="text" name="soDienThoai" value="{{ old('soDienThoai') }}" class="w-full border rounded px-3 py-2 @error('soDienThoai') border-red-500 @enderror" required>
+                @error('soDienThoai') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>

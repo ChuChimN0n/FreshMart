@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class DonHang extends Model
 {
@@ -87,5 +88,31 @@ class DonHang extends Model
     public function canCancel(): bool
     {
         return in_array($this->trangThai, [self::CHO_XAC_NHAN]);
+    }
+
+    public function transitionTo(string $next, bool $customerCancellation = false): bool
+    {
+        return DB::transaction(function () use ($next, $customerCancellation): bool {
+            $order = self::whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+
+            if ($customerCancellation && (! $order->canCancel() || $next !== self::DA_HUY)) {
+                return false;
+            }
+
+            if (! in_array($next, self::VALID_TRANSITIONS[$order->trangThai] ?? [], true)) {
+                return false;
+            }
+
+            if ($next === self::DA_HUY) {
+                foreach ($order->chiTietDonHangs()->orderBy('maSP')->get() as $detail) {
+                    SanPham::whereKey($detail->maSP)->increment('soLuong', $detail->soLuong);
+                }
+            }
+
+            $order->update(['trangThai' => $next]);
+            $this->setRawAttributes($order->getAttributes(), true);
+
+            return true;
+        }, 3);
     }
 }

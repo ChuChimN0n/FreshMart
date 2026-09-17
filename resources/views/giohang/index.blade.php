@@ -6,7 +6,10 @@
 </h1>
 
 @if($gioHang && $gioHang->chiTietGioHangs->count() > 0)
-<div class="bhx-card overflow-hidden">
+@if($pricesChanged)
+<p class="mb-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">Giá sản phẩm đã thay đổi. Giỏ hàng đang hiển thị giá bán hiện tại.</p>
+@endif
+<div class="bhx-card overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-bhx-600 text-white">
             <tr>
@@ -22,8 +25,8 @@
             <tr class="border-t hover:bg-bhx-50/50">
                 <td class="px-4 py-3">
                     <div class="flex items-center gap-3">
-                        @if($ct->sanPham->hinhAnh)
-                            <img src="{{ asset('storage/'.$ct->sanPham->hinhAnh) }}" class="w-14 h-14 object-cover rounded-lg">
+                        @if($ct->sanPham?->hinhAnh)
+                            <img src="{{ asset('storage/'.$ct->sanPham->hinhAnh) }}" alt="{{ $ct->sanPham->tenSP }}" class="w-14 h-14 object-cover rounded-lg">
                         @else
                             <div class="w-14 h-14 bg-bhx-50 flex items-center justify-center rounded-lg text-bhx-300 text-xl"><i class="bi bi-basket"></i></div>
                         @endif

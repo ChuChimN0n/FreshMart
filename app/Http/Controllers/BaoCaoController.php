@@ -16,10 +16,23 @@ class BaoCaoController extends Controller
 
     public function sanPham(Request $request)
     {
-        $request->validate([
-            'tuNgay' => 'required|date',
-            'denNgay' => 'required|date|after_or_equal:tuNgay',
-        ]);
+        $request->validate(
+            [
+                'tuNgay' => 'required|date',
+                'denNgay' => 'required|date|after_or_equal:tuNgay',
+            ],
+            [
+                'tuNgay.required' => 'Vui lòng chọn ngày bắt đầu.',
+                'tuNgay.date' => 'Ngày bắt đầu không đúng định dạng.',
+                'denNgay.required' => 'Vui lòng chọn ngày kết thúc.',
+                'denNgay.date' => 'Ngày kết thúc không đúng định dạng.',
+                'denNgay.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu. Vui lòng chọn lại ngày.',
+            ],
+            [
+                'tuNgay' => 'ngày bắt đầu',
+                'denNgay' => 'ngày kết thúc',
+            ]
+        );
 
         $tuNgay = $request->tuNgay;
         $denNgay = $request->denNgay;
@@ -49,10 +62,23 @@ class BaoCaoController extends Controller
 
     public function doanhThu(Request $request)
     {
-        $request->validate([
-            'tuNgay' => 'required|date',
-            'denNgay' => 'required|date|after_or_equal:tuNgay',
-        ]);
+        $request->validate(
+            [
+                'tuNgay' => 'required|date',
+                'denNgay' => 'required|date|after_or_equal:tuNgay',
+            ],
+            [
+                'tuNgay.required' => 'Vui lòng chọn ngày bắt đầu.',
+                'tuNgay.date' => 'Ngày bắt đầu không đúng định dạng.',
+                'denNgay.required' => 'Vui lòng chọn ngày kết thúc.',
+                'denNgay.date' => 'Ngày kết thúc không đúng định dạng.',
+                'denNgay.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu. Vui lòng chọn lại ngày.',
+            ],
+            [
+                'tuNgay' => 'ngày bắt đầu',
+                'denNgay' => 'ngày kết thúc',
+            ]
+        );
 
         $tuNgay = $request->tuNgay;
         $denNgay = $request->denNgay;
@@ -77,10 +103,23 @@ class BaoCaoController extends Controller
 
     public function donHang(Request $request)
     {
-        $request->validate([
-            'tuNgay' => 'required|date',
-            'denNgay' => 'required|date|after_or_equal:tuNgay',
-        ]);
+        $request->validate(
+            [
+                'tuNgay' => 'required|date',
+                'denNgay' => 'required|date|after_or_equal:tuNgay',
+            ],
+            [
+                'tuNgay.required' => 'Vui lòng chọn ngày bắt đầu.',
+                'tuNgay.date' => 'Ngày bắt đầu không đúng định dạng.',
+                'denNgay.required' => 'Vui lòng chọn ngày kết thúc.',
+                'denNgay.date' => 'Ngày kết thúc không đúng định dạng.',
+                'denNgay.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu. Vui lòng chọn lại ngày.',
+            ],
+            [
+                'tuNgay' => 'ngày bắt đầu',
+                'denNgay' => 'ngày kết thúc',
+            ]
+        );
 
         $tuNgay = $request->tuNgay;
         $denNgay = $request->denNgay;

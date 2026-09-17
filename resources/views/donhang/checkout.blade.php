@@ -5,6 +5,9 @@
     <i class="bi bi-bag-check text-bhx-500"></i> Xác nhận đặt hàng
 </h1>
 
+@if($pricesChanged)
+<p class="mb-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">Giá sản phẩm đã thay đổi. Vui lòng kiểm tra tổng tiền hiện tại trước khi đặt hàng.</p>
+@endif
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="bhx-card p-5">
         <h2 class="font-bold text-gray-800 mb-3"><i class="bi bi-basket text-bhx-500"></i> Sản phẩm trong giỏ</h2>
@@ -24,22 +27,22 @@
     </div>
 
     <div class="bhx-card p-5">
-        <form method="POST" action="{{ route('donhang.place') }}">
+        <form method="POST" action="{{ route('donhang.place') }}" data-submit-once>
             @csrf
             <h2 class="font-bold text-gray-800 mb-3"><i class="bi bi-truck text-bhx-500"></i> Thông tin giao hàng</h2>
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tên người nhận *</label>
-                <input type="text" name="tenNguoiNhan" value="{{ Auth::user()->hoTen }}" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('tenNguoiNhan') border-red-500 @enderror" required>
+                <input type="text" name="tenNguoiNhan" value="{{ old('tenNguoiNhan', Auth::user()->hoTen) }}" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('tenNguoiNhan') border-red-500 @enderror" required>
                 @error('tenNguoiNhan') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
-                <input type="text" name="soDienThoai" value="{{ Auth::user()->soDienThoai }}" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('soDienThoai') border-red-500 @enderror" required>
+                <input type="text" name="soDienThoai" value="{{ old('soDienThoai', Auth::user()->soDienThoai) }}" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('soDienThoai') border-red-500 @enderror" required>
                 @error('soDienThoai') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ *</label>
-                <input type="text" name="diaChi" value="{{ Auth::user()->diaChi }}" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('diaChi') border-red-500 @enderror" required>
+                <input type="text" name="diaChi" value="{{ old('diaChi', Auth::user()->diaChi) }}" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('diaChi') border-red-500 @enderror" required>
                 @error('diaChi') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
             <div class="flex gap-2">

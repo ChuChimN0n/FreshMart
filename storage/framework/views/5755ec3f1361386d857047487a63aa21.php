@@ -58,9 +58,9 @@
                         <i class="bi <?php echo e($i <= round($trungBinhSao) ? 'bi-star-fill' : 'bi-star'); ?> text-bhx-yellow"></i>
                     <?php endfor; ?>
                 </span>
-                <?php if($danhGias->count() > 0): ?>
+                <?php if($tongDanhGia > 0): ?>
                     <a href="#danh-gia" class="text-xs text-bhx-600 hover:underline font-medium">
-                        <?php echo e(number_format($trungBinhSao, 1, ',', '.')); ?> (<?php echo e($danhGias->count()); ?> đánh giá)
+                        <?php echo e(number_format($trungBinhSao, 1, ',', '.')); ?> (<?php echo e($tongDanhGia); ?> đánh giá)
                     </a>
                 <?php else: ?>
                     <span class="text-xs text-gray-400">Chưa có đánh giá</span>
@@ -178,12 +178,12 @@
 <div id="danh-gia" class="mt-10 scroll-mt-32">
     <h2 class="text-xl font-bold flex items-center gap-2">
         <i class="bi bi-chat-left-text text-bhx-500"></i> Đánh giá sản phẩm
-        <?php if($danhGias->count() > 0): ?>
-            <span class="text-sm font-normal text-gray-400">(<?php echo e($danhGias->count()); ?> đánh giá)</span>
+        <?php if($tongDanhGia > 0): ?>
+            <span class="text-sm font-normal text-gray-400">(<?php echo e($tongDanhGia); ?> đánh giá)</span>
         <?php endif; ?>
     </h2>
 
-    <?php if($danhGias->count() > 0): ?>
+    <?php if($tongDanhGia > 0): ?>
     <div class="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 mt-4">
         <div class="bhx-card p-5 text-center">
             <p class="text-4xl font-extrabold text-gray-900"><?php echo e(number_format($trungBinhSao, 1, ',', '.')); ?></p>
@@ -192,7 +192,7 @@
                     <i class="bi <?php echo e($i <= round($trungBinhSao) ? 'bi-star-fill' : 'bi-star'); ?> text-bhx-yellow"></i>
                 <?php endfor; ?>
             </div>
-            <p class="text-xs text-gray-400 mt-2"><?php echo e($danhGias->count()); ?> lượt đánh giá</p>
+            <p class="text-xs text-gray-400 mt-2"><?php echo e($tongDanhGia); ?> lượt đánh giá</p>
         </div>
         <div class="bhx-card p-5 space-y-2">
             <?php $__currentLoopData = $phanTramSao; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -276,6 +276,7 @@
         <p class="text-gray-500 text-sm">Chưa có đánh giá nào cho sản phẩm này.</p>
     </div>
     <?php endif; ?>
+    <div class="mt-4"><?php echo e($danhGias->withQueryString()->fragment('danh-gia')->links()); ?></div>
 </div>
 
 
@@ -345,4 +346,5 @@
     }
 </script>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\tools\laragon\www\laravel-FreshVege\resources\views\home\show.blade.php ENDPATH**/ ?>

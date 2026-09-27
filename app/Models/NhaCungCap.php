@@ -15,6 +15,7 @@ class NhaCungCap extends Model
 
     protected $fillable = [
         'tenNCC',
+        'codeNCC',
         'soDienThoai',
         'email',
         'diaChi',

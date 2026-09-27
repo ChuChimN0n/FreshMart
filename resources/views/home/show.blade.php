@@ -227,14 +227,14 @@
                     <input type="hidden" name="maSP" value="{{ $sanpham->maSP }}">
                     <div>
                         <label class="block text-sm text-gray-600 mb-1.5">Số sao</label>
-                        <div id="starRating" class="flex items-center gap-1">
+                        <div id="starRating" class="flex items-center gap-1.5 bg-orange-50 border border-bhx-orange/30 rounded-xl px-4 py-3">
                             @for($i = 1; $i <= 5; $i++)
-                                <label class="cursor-pointer">
+                                <label class="cursor-pointer leading-none">
                                     <input type="radio" name="soSao" value="{{ $i }}" class="hidden" {{ old('soSao', 5) == $i ? 'checked' : '' }}>
-                                    <i class="bi bi-star-fill text-2xl"></i>
+                                    <i class="bi bi-star-fill text-4xl"></i>
                                 </label>
                             @endfor
-                            <span id="starRatingText" class="ml-2 text-sm font-medium text-gray-600"></span>
+                            <span id="starRatingText" class="ml-2 text-base font-bold text-bhx-orange"></span>
                         </div>
                     </div>
                     <div>
@@ -339,9 +339,9 @@
         var text = document.getElementById('starRatingText');
         function paint(n) {
             wrap.querySelectorAll('label').forEach(function (lb, idx) {
-                lb.querySelector('i').className = 'bi text-2xl ' + (idx < n ? 'bi-star-fill text-bhx-yellow' : 'bi-star text-gray-300');
+                lb.querySelector('i').className = 'bi text-4xl ' + (idx < n ? 'bi-star-fill text-bhx-orange' : 'bi-star-fill text-gray-300');
             });
-            if (text) text.textContent = labels[n] || '';
+            if (text) text.textContent = n + '/5 · ' + (labels[n] || '');
         }
         wrap.querySelectorAll('input[name="soSao"]').forEach(function (radio) {
             radio.addEventListener('change', function () { paint(parseInt(radio.value, 10)); });

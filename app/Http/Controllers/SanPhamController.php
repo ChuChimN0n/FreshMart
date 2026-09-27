@@ -6,6 +6,7 @@ use App\Models\DanhMuc;
 use App\Models\GioHang;
 use App\Models\NhaCungCap;
 use App\Models\SanPham;
+use App\Services\CodeGenerator;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,15 +21,50 @@ class SanPhamController extends Controller
         $query = SanPham::with(['nhaCungCap', 'danhMuc']);
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('tenSP', 'like', "%$search%");
+            $query->where(function ($q) use ($search) {
+                $q->where('tenSP', 'like', "%$search%")
+                    ->orWhere('sku', 'like', "%$search%");
+                if (ctype_digit($search)) {
+                    $q->orWhere('maSP', (int) $search);
+                }
+            });
         }
         if ($request->filled('maDM')) {
             $query->where('maDM', $request->maDM);
         }
-        $sanPhams = $query->orderBy('maSP', 'desc')->paginate(10);
+        if ($request->filled('maNCC')) {
+            $query->where('maNCC', $request->maNCC);
+        }
+        if ($request->filled('trangThai')
+            && in_array($request->trangThai, [SanPham::DANG_BAN, SanPham::NGUNG_BAN], true)) {
+            $query->where('trangThai', $request->trangThai);
+        }
+        if ($request->filled('tonKho')) {
+            match ($request->tonKho) {
+                'het' => $query->where('soLuong', '<=', 0),
+                'saphet' => $query->whereBetween('soLuong', [1, 5]),
+                'con' => $query->where('soLuong', '>', 0),
+                default => null,
+            };
+        }
+        match ($request->input('sort')) {
+            'ten_asc' => $query->orderBy('tenSP')->orderBy('maSP', 'desc'),
+            'gia_asc' => $query->orderBy('giaBan')->orderBy('maSP', 'desc'),
+            'gia_desc' => $query->orderByDesc('giaBan')->orderBy('maSP', 'desc'),
+            default => $query->orderBy('maSP', 'desc'),
+        };
+        $sanPhams = $query->paginate(10);
         $danhMucs = DanhMuc::ordered()->get();
+        $nhaCungCaps = NhaCungCap::orderBy('tenNCC')->get();
 
-        return view('staff.sanpham.index', compact('sanPhams', 'danhMucs'));
+        $thongKe = [
+            'tong' => SanPham::count(),
+            'dangBan' => SanPham::where('trangThai', SanPham::DANG_BAN)->count(),
+            'sapHet' => SanPham::whereBetween('soLuong', [1, 5])->count(),
+            'hetHang' => SanPham::where('soLuong', '<=', 0)->count(),
+        ];
+
+        return view('staff.sanpham.index', compact('sanPhams', 'danhMucs', 'nhaCungCaps', 'thongKe'));
     }
 
     public function create()
@@ -51,10 +87,12 @@ class SanPhamController extends Controller
             'moTa' => 'nullable|string',
             'soLuong' => 'required|integer|min:0',
             'trangThai' => ['required', Rule::in([SanPham::DANG_BAN, SanPham::NGUNG_BAN])],
-        ],[
-            'tenSP.unique'=> 'Sản phẩm đã được sử dụng',
+        ], [
+            'tenSP.unique' => 'Sản phẩm đã được sử dụng',
         ]);
 
+        // SKU luôn do hệ thống sinh, bỏ qua mọi giá trị client gửi lên.
+        // insertUnique tự sinh lại mã và retry khi đua trùng unique.
         $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'soLuong', 'trangThai');
 
         $newPath = null;
@@ -66,7 +104,10 @@ class SanPhamController extends Controller
                 }
                 $data['hinhAnh'] = $newPath;
             }
-            SanPham::create($data);
+            CodeGenerator::insertUnique(
+                fn () => SanPham::create($data + ['sku' => CodeGenerator::next('sanpham', ['maDM' => $data['maDM']])]),
+                'sku'
+            );
         } catch (\Throwable $e) {
             if ($newPath) {
                 Storage::disk('public')->delete($newPath);
@@ -101,6 +142,7 @@ class SanPhamController extends Controller
             'trangThai' => ['required', Rule::in([SanPham::DANG_BAN, SanPham::NGUNG_BAN])],
         ]);
 
+        // SKU đã khóa: không cho đổi qua form sửa, bỏ qua mọi giá trị client gửi lên.
         $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'soLuong', 'trangThai');
 
         $newPath = null;

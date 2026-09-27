@@ -10,6 +10,7 @@ use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NhaCungCapController;
 use App\Http\Controllers\SanPhamController;
+use App\Http\Controllers\SuggestCodeController;
 use App\Http\Controllers\TaiKhoanController;
 use App\Http\Controllers\VaiTroController;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +57,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
 // ========== ADMIN (role:1) ==========
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
+    Route::get('/goi-y-ma', SuggestCodeController::class)->name('suggest.code');
 
     // Nha cung cap
     Route::get('/nha-cung-cap', [NhaCungCapController::class, 'index'])->name('nhacungcap.index');
@@ -102,6 +104,7 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'permission'])->grou
 
     // San pham
     Route::get('/san-pham', [SanPhamController::class, 'index'])->name('sanpham.index');
+    Route::get('/goi-y-ma', SuggestCodeController::class)->name('suggest.code');
     Route::get('/san-pham/them', [SanPhamController::class, 'create'])->name('sanpham.create');
     Route::post('/san-pham/them', [SanPhamController::class, 'store'])->name('sanpham.store');
     Route::get('/san-pham/{sanpham}/sua', [SanPhamController::class, 'edit'])->name('sanpham.edit');

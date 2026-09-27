@@ -33,6 +33,6 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by('account:'.hash('sha256', Str::lower((string) $request->input('tenDangNhap')).'|'.$request->ip())),
         ]);
 
-        View::composer('layouts.app', CartComposer::class);
+        View::composer(['layouts.app', 'layouts.management', 'layouts.partials.sidebar'], CartComposer::class);
     }
 }

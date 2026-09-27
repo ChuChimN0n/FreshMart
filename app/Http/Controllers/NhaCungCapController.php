@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\NhaCungCap;
+use App\Services\CodeGenerator;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,13 +13,14 @@ class NhaCungCapController extends Controller
 {
     public function index(Request $request)
     {
-        $query = NhaCungCap::query();
+        $query = NhaCungCap::withCount('sanPhams');
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('tenNCC', 'like', "%$search%")
                     ->orWhere('soDienThoai', 'like', "%$search%")
-                    ->orWhere('email', 'like', "%$search%");
+                    ->orWhere('email', 'like', "%$search%")
+                    ->orWhere('codeNCC', 'like', "%$search%");
             });
         }
         $nhaCungCaps = $query->orderBy('maNCC', 'desc')->paginate(10);
@@ -60,7 +62,18 @@ class NhaCungCapController extends Controller
             'soDienThoai.regex' => 'Số điện thoại không đúng định dạng (phải gồm 10 chữ số hợp lệ tại Việt Nam).',
         ]);
 
-        NhaCungCap::create($request->only('tenNCC', 'soDienThoai', 'email', 'diaChi'));
+        // Mã NCC luôn do hệ thống sinh; insertUnique tự sinh lại và retry khi đua trùng.
+        try {
+            CodeGenerator::insertUnique(
+                fn () => NhaCungCap::create($request->only('tenNCC', 'soDienThoai', 'email', 'diaChi')
+                    + ['codeNCC' => CodeGenerator::next('nhacungcap')]),
+                'codeNCC'
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->withInput()->with('error', 'Chưa thể lưu nhà cung cấp. Vui lòng thử lại!');
+        }
 
         return redirect()->route('admin.nhacungcap.index')->with('success', 'Thêm nhà cung cấp thành công!');
     }
@@ -107,14 +120,14 @@ class NhaCungCapController extends Controller
     public function destroy(NhaCungCap $nhacungcap): RedirectResponse
     {
         if ($nhacungcap->sanPhams()->exists()) {
-            return back()->with('error', 'Không thể xóa nhà cung cấp vì còn sản phẩm thuộc nhà cung cấp này!');
+            return back()->with('error', 'Nhà cung cấp này đã được sử dụng trong sản phẩm, không thể xóa!');
         }
 
         try {
             $nhacungcap->delete();
         } catch (QueryException $e) {
             if ($nhacungcap->sanPhams()->exists()) {
-                return back()->with('error', 'Không thể xóa nhà cung cấp vì còn sản phẩm thuộc nhà cung cấp này!');
+                return back()->with('error', 'Nhà cung cấp này đã được sử dụng trong sản phẩm, không thể xóa!');
             }
 
             throw $e;

@@ -99,6 +99,10 @@ class AuthController extends Controller
             'email.unique' => 'Email này đã được sử dụng.',
             'soDienThoai.unique' => 'Số điện thoại này đã được sử dụng.',
             'soDienThoai.regex' => 'Số điện thoại không đúng định dạng (phải gồm 10 chữ số hợp lệ tại Việt Nam).',
+            'matKhau.required' => 'Vui lòng nhập mật khẩu.',
+            'matKhau.confirmed' => 'Xác nhận mật khẩu không trùng khớp.',
+            'matKhau.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'matKhau.regex' => 'Mật khẩu không được chứa khoảng trắng.',
         ]);
 
         $taiKhoan = DB::transaction(function () use ($request): TaiKhoan {
@@ -175,13 +179,15 @@ class AuthController extends Controller
             'matKhau_moi' => [
                 'required',
                 'confirmed',
-                Password::min(6)],
-            'regex:/^\S*$/',
+                Password::min(6),
+                'regex:/^\S*$/',
+            ],
         ], [
             'matKhau_hien_tai.required' => 'Vui lòng nhập mật khẩu hiện tại.',
             'matKhau_moi.required' => 'Vui lòng nhập mật khẩu mới.',
             'matKhau_moi.confirmed' => 'Xác nhận mật khẩu mới không trùng khớp.',
             'matKhau_moi.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'matKhau_moi.regex' => 'Mật khẩu mới không được chứa khoảng trắng.',
         ]);
 
         $user = Auth::user();

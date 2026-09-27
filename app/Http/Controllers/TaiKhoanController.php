@@ -27,10 +27,21 @@ class TaiKhoanController extends Controller
         if ($request->filled('maVT')) {
             $query->where('maVT', $request->maVT);
         }
+        if ($request->filled('trangThai') && in_array($request->trangThai, ['HOAT_DONG', 'KHOA'], true)) {
+            $query->where('trangThai', $request->trangThai);
+        }
         $taiKhoans = $query->orderBy('maTK', 'desc')->paginate(10);
         $vaiTros = VaiTro::orderBy('tenVT')->get();
 
-        return view('admin.taikhoan.index', compact('taiKhoans', 'vaiTros'));
+        $thongKe = [
+            'tong' => TaiKhoan::count(),
+            'admin' => TaiKhoan::where('maVT', VaiTro::ADMIN_ID)->count(),
+            'staff' => TaiKhoan::where('maVT', VaiTro::STAFF_ID)->count(),
+            'khach' => TaiKhoan::where('maVT', VaiTro::KHACH_HANG_ID)->count(),
+            'khoa' => TaiKhoan::where('trangThai', 'KHOA')->count(),
+        ];
+
+        return view('admin.taikhoan.index', compact('taiKhoans', 'vaiTros', 'thongKe'));
     }
 
     public function create()

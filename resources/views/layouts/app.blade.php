@@ -150,8 +150,12 @@
                         <a href="{{ route('donhang.index') }}" class="nav-link-sm {{ request()->routeIs('donhang.*') ? 'active' : '' }}">
                             <i class="bi bi-receipt"></i> Đơn hàng
                         </a>
+                    @elseif(($managementLinks ?? collect())->isNotEmpty())
+                        {{-- Admin/nhân viên: menu chi tiết đã chuyển xuống sidebar, header chỉ giữ 1 link Quản lý --}}
+                        <a href="{{ route(Auth::user()->dashboardRoute()) }}" class="nav-link-sm {{ request()->routeIs('admin.*') || request()->routeIs('staff.*') ? 'active' : '' }}">
+                            <i class="bi bi-speedometer2"></i> Quản lý
+                        </a>
                     @endif
-                    @include('layouts.management-links')
                 @else
                     <a href="{{ route('home') }}" class="nav-link-sm {{ request()->routeIs('home') ? 'active' : '' }}">
                         <i class="bi bi-house-door"></i> Trang chủ
@@ -178,8 +182,12 @@
                         <i class="bi bi-receipt"></i> Đơn hàng
                     </a>
                     <div class="border-t border-white/10 my-1.5"></div>
+                @elseif(($managementLinks ?? collect())->isNotEmpty())
+                    <a href="{{ route(Auth::user()->dashboardRoute()) }}">
+                        <i class="bi bi-speedometer2"></i> Quản lý
+                    </a>
+                    <div class="border-t border-white/10 my-1.5"></div>
                 @endif
-                @include('layouts.management-links', ['mobile' => true])
 
                 <a href="{{ route('profile') }}"><i class="bi bi-person"></i> Thông tin cá nhân</a>
                 <a href="{{ route('change-password') }}"><i class="bi bi-key"></i> Đổi mật khẩu</a>
@@ -327,6 +335,14 @@
                 deleteConfirmForm = form;
                 document.getElementById('deleteConfirmMessage').textContent = form.getAttribute('data-confirm');
                 document.getElementById('deleteConfirmModal').classList.remove('hidden');
+            }
+            // Chống bấm nút 2 lần (VD: nút Đặt hàng) — disable nút submit sau lần bấm đầu.
+            if (form && form.matches && form.matches('form[data-submit-once]') && !form.dataset.submitted) {
+                form.dataset.submitted = '1';
+                form.querySelectorAll('button[type="submit"]').forEach(function (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-70', 'cursor-wait');
+                });
             }
         });
 

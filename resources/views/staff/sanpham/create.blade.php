@@ -1,75 +1,183 @@
-@extends('layouts.app')
+@extends('layouts.management')
 @section('title', 'Thêm sản phẩm')
 @section('content')
-<h1 class="text-2xl font-bold mb-4">Thêm sản phẩm mới</h1>
-<div class="bg-white rounded-lg shadow p-6 max-w-2xl">
-    <form method="POST" action="{{ route('staff.sanpham.store') }}" enctype="multipart/form-data">
-        @csrf
-        <div class="grid grid-cols-2 gap-4">
-            <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
-                <input type="text" name="tenSP" value="{{ old('tenSP') }}" class="w-full border rounded px-3 py-2 @error('tenSP') border-red-500 @enderror" required>
-                @error('tenSP') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục *</label>
-                <select name="maDM" class="w-full border rounded px-3 py-2 @error('maDM') border-red-500 @enderror" required>
-                    <option value="">-- Chọn --</option>
-                    @foreach($danhMucs as $dm)
-                    <option value="{{ $dm->maDM }}" {{ old('maDM') == $dm->maDM ? 'selected' : '' }}>{{ $dm->tenDM }}</option>
-                    @endforeach
-                </select>
-                @error('maDM') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nhà cung cấp *</label>
-                <select name="maNCC" class="w-full border rounded px-3 py-2 @error('maNCC') border-red-500 @enderror" required>
-                    <option value="">-- Chọn --</option>
-                    @foreach($nhaCungCaps as $ncc)
-                    <option value="{{ $ncc->maNCC }}" {{ old('maNCC') == $ncc->maNCC ? 'selected' : '' }}>{{ $ncc->tenNCC }}</option>
-                    @endforeach
-                </select>
-                @error('maNCC') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán *</label>
-                <input type="number" name="giaBan" value="{{ old('giaBan', 0) }}" class="w-full border rounded px-3 py-2 @error('giaBan') border-red-500 @enderror" min="0" required>
-                @error('giaBan') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho *</label>
-                <input type="number" name="soLuong" value="{{ old('soLuong', 0) }}" class="w-full border rounded px-3 py-2 @error('soLuong') border-red-500 @enderror" min="0" required>
-                @error('soLuong') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính *</label>
-                <select name="donVi" class="w-full border rounded px-3 py-2 @error('donVi') border-red-500 @enderror" required>
-                    @foreach(['kg','quả','bó','gói','chai','hộp','thùng','bịch','cây','củ','cái'] as $dv)
-                    <option value="{{ $dv }}" {{ old('donVi', 'kg') == $dv ? 'selected' : '' }}>{{ $dv }}</option>
-                    @endforeach
-                </select>
-                @error('donVi') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái *</label>
-                <select name="trangThai" class="w-full border rounded px-3 py-2" required>
-                    <option value="{{ \App\Models\SanPham::DANG_BAN }}" {{ old('trangThai') == \App\Models\SanPham::DANG_BAN ? 'selected' : '' }}>Đang bán</option>
-                    <option value="{{ \App\Models\SanPham::NGUNG_BAN }}" {{ old('trangThai') == \App\Models\SanPham::NGUNG_BAN ? 'selected' : '' }}>Ngừng bán</option>
-                </select>
-            </div>
-            <div class="mb-3 col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Hình ảnh</label>
-                <input type="file" name="hinhAnh" accept="image/*" class="w-full border rounded px-3 py-2">
-            </div>
-            <div class="mb-3 col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-                <textarea name="moTa" rows="3" class="w-full border rounded px-3 py-2">{{ old('moTa') }}</textarea>
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <button type="submit" class="bg-bhx-500 text-white px-4 py-2 rounded hover:bg-bhx-600">Thêm</button>
-            <a href="{{ route('staff.sanpham.index') }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Hủy</a>
-        </div>
-    </form>
+{{-- ===== Breadcrumb ===== --}}
+<nav class="text-sm text-gray-500 mb-4 flex items-center gap-2">
+    <a href="{{ route('staff.sanpham.index') }}" class="hover:text-bhx-600 transition">Quản lý sản phẩm</a>
+    <i class="bi bi-chevron-right text-xs"></i>
+    <span class="text-gray-800 font-medium">Thêm mới</span>
+</nav>
+
+<div class="mb-5">
+    <h1 class="text-2xl font-bold text-gray-800">Thêm sản phẩm mới</h1>
+    <p class="text-sm text-gray-500 mt-1">Điền đầy đủ thông tin để sản phẩm hiển thị trên cửa hàng</p>
 </div>
+
+<form method="POST" action="{{ route('staff.sanpham.store') }}" enctype="multipart/form-data">
+    @csrf
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+        {{-- ===== Cột trái: thông tin chung + mô tả ===== --}}
+        <div class="lg:col-span-2 space-y-5">
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-bhx-50 text-bhx-600 flex items-center justify-center text-sm"><i class="bi bi-info-circle"></i></span>
+                    Thông tin chung
+                </h2>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
+                    <input type="text" name="tenSP" value="{{ old('tenSP') }}" placeholder="VD: Rau muống tươi" class="bhx-input @error('tenSP') !border-red-500 @enderror" required>
+                    @error('tenSP') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mã sản phẩm (SKU) <i class="bi bi-lock-fill text-xs text-gray-400" title="Mã do hệ thống tự sinh"></i></label>
+                    <input type="text" id="skuInput" value="{{ old('sku') }}" placeholder="Chọn danh mục để xem mã gợi ý"
+                           readonly class="bhx-input font-mono bg-gray-50 text-gray-600">
+                    <p class="text-xs text-gray-400 mt-1">Mã do hệ thống tự sinh theo danh mục, không chỉnh sửa. Mã chốt khi bấm Lưu.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <x-searchable-select name="maDM" label="Danh mục" :required="true"
+                            placeholder="-- Chọn danh mục --" searchPlaceholder="Gõ để tìm danh mục..."
+                            :options="$danhMucs->map(fn ($dm) => ['value' => $dm->maDM, 'label' => $dm->tenDM])->all()"
+                            :selected="old('maDM')" :error="$errors->first('maDM')" />
+                    </div>
+                    <div>
+                        <x-searchable-select name="maNCC" label="Nhà cung cấp" :required="true"
+                            placeholder="-- Chọn nhà cung cấp --" searchPlaceholder="Gõ để tìm nhà cung cấp..."
+                            :options="$nhaCungCaps->map(fn ($ncc) => ['value' => $ncc->maNCC, 'label' => $ncc->tenNCC])->all()"
+                            :selected="old('maNCC')" :error="$errors->first('maNCC')" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán (đ) <span class="text-red-500">*</span></label>
+                        <input type="number" name="giaBan" value="{{ old('giaBan', 0) }}" min="0" step="500" class="bhx-input @error('giaBan') !border-red-500 @enderror" required>
+                        @error('giaBan') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho <span class="text-red-500">*</span></label>
+                        <input type="number" name="soLuong" value="{{ old('soLuong', 0) }}" min="0" class="bhx-input @error('soLuong') !border-red-500 @enderror" required>
+                        @error('soLuong') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính <span class="text-red-500">*</span></label>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['kg','quả','bó','gói','chai','hộp','thùng','bịch','cây','củ','cái'] as $dv)
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="donVi" value="{{ $dv }}" {{ old('donVi', 'kg') == $dv ? 'checked' : '' }} class="peer sr-only" required>
+                                    <span class="inline-block px-3.5 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 peer-checked:bg-bhx-500 peer-checked:border-bhx-500 peer-checked:text-white hover:border-bhx-400 transition">{{ $dv }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('donVi') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-bhx-50 text-bhx-600 flex items-center justify-center text-sm"><i class="bi bi-card-text"></i></span>
+                    Mô tả sản phẩm
+                </h2>
+                <textarea name="moTa" rows="4" placeholder="Nguồn gốc, cách bảo quản, gợi ý chế biến..." class="bhx-input">{{ old('moTa') }}</textarea>
+            </div>
+        </div>
+
+        {{-- ===== Cột phải: hình ảnh + trạng thái ===== --}}
+        <div class="space-y-5">
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-bhx-50 text-bhx-600 flex items-center justify-center text-sm"><i class="bi bi-image"></i></span>
+                    Hình ảnh
+                </h2>
+                <div id="previewBox" class="aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 overflow-hidden mb-3">
+                    <img id="previewImg" class="hidden w-full h-full object-cover" alt="Xem trước">
+                    <div id="previewPlaceholder" class="flex flex-col items-center">
+                        <i class="bi bi-cloud-upload text-4xl mb-2"></i>
+                        <p class="text-xs">Chưa có ảnh</p>
+                    </div>
+                </div>
+                <input type="file" name="hinhAnh" id="hinhAnh" accept="image/*" class="bhx-input">
+                @error('hinhAnh') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                <p class="text-xs text-gray-400 mt-2">JPG, PNG tối đa 2MB. Ảnh vuông hiển thị đẹp nhất.</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-5">
+                <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-bhx-50 text-bhx-600 flex items-center justify-center text-sm"><i class="bi bi-eye"></i></span>
+                    Trạng thái
+                </h2>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:border-bhx-400 has-checked:border-bhx-500 has-checked:bg-bhx-50/50 transition">
+                        <input type="radio" name="trangThai" value="{{ \App\Models\SanPham::DANG_BAN }}" {{ old('trangThai', \App\Models\SanPham::DANG_BAN) == \App\Models\SanPham::DANG_BAN ? 'checked' : '' }} class="accent-green-600" required>
+                        <span>
+                            <span class="block text-sm font-medium text-gray-800">Đang bán</span>
+                            <span class="block text-xs text-gray-400">Hiển thị trên cửa hàng</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:border-gray-400 has-checked:border-gray-500 has-checked:bg-gray-50 transition">
+                        <input type="radio" name="trangThai" value="{{ \App\Models\SanPham::NGUNG_BAN }}" {{ old('trangThai') == \App\Models\SanPham::NGUNG_BAN ? 'checked' : '' }} class="accent-gray-600">
+                        <span>
+                            <span class="block text-sm font-medium text-gray-800">Ngừng bán</span>
+                            <span class="block text-xs text-gray-400">Ẩn khỏi cửa hàng</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ===== Thanh hành động ===== --}}
+    <div class="sticky bottom-4 z-10 mt-5 bg-white rounded-xl shadow-md p-4 flex items-center justify-end gap-2">
+        <a href="{{ route('staff.sanpham.index') }}" class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Hủy</a>
+        <button type="submit" class="bhx-btn-primary"><i class="bi bi-check-lg"></i> Thêm sản phẩm</button>
+    </div>
+</form>
+
+<script>
+    (function () {
+        const skuInput = document.getElementById('skuInput');
+        const maDMInput = document.querySelector('input[name="maDM"]');
+        let autoFilled = !skuInput.value;
+        skuInput.addEventListener('input', () => { autoFilled = false; });
+
+        async function fetchSku() {
+            if (!maDMInput || !maDMInput.value) return null;
+            try {
+                const res = await fetch("{{ route('staff.suggest.code') }}?profile=sanpham&maDM=" + encodeURIComponent(maDMInput.value), {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!res.ok) return null;
+                const data = await res.json();
+                return data.code || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        if (maDMInput) {
+            maDMInput.addEventListener('change', async () => {
+                if (!autoFilled) return;
+                const sku = await fetchSku();
+                if (sku) skuInput.value = sku;
+            });
+        }
+    })();
+
+    document.getElementById('hinhAnh').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        const img = document.getElementById('previewImg');
+        const placeholder = document.getElementById('previewPlaceholder');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                img.src = ev.target.result;
+                img.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            img.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+        }
+    });
+</script>
 @endsection

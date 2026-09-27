@@ -9,20 +9,21 @@
 @if($pricesChanged)
 <p class="mb-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">Giá sản phẩm đã thay đổi. Giỏ hàng đang hiển thị giá bán hiện tại.</p>
 @endif
-<div class="bhx-card overflow-x-auto">
-    <table class="w-full text-sm">
-        <thead class="bg-bhx-600 text-white">
-            <tr>
-                <th class="px-4 py-3 text-left">Sản phẩm</th>
-                <th class="px-4 py-3 text-right">Đơn giá</th>
-                <th class="px-4 py-3 text-center">Số lượng</th>
-                <th class="px-4 py-3 text-right">Thành tiền</th>
-                <th class="px-4 py-3 text-center">Xóa</th>
+<div class="bhx-card overflow-hidden">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[640px]">
+        <thead class="bg-gray-50">
+            <tr class="text-xs uppercase tracking-wide text-gray-500">
+                <th class="px-4 py-3 text-left font-semibold">Sản phẩm</th>
+                <th class="px-4 py-3 text-right font-semibold">Đơn giá</th>
+                <th class="px-4 py-3 text-center font-semibold">Số lượng</th>
+                <th class="px-4 py-3 text-right font-semibold">Thành tiền</th>
+                <th class="px-4 py-3 text-center font-semibold">Xóa</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-gray-100">
             @foreach($gioHang->chiTietGioHangs as $ct)
-            <tr class="border-t hover:bg-bhx-50/50">
+            <tr class="hover:bg-bhx-50/50 transition">
                 <td class="px-4 py-3">
                     <div class="flex items-center gap-3">
                         @if($ct->sanPham?->hinhAnh)
@@ -42,8 +43,9 @@
                 <td class="px-4 py-3">
                     <form method="POST" action="{{ route('giohang.update', $ct) }}" class="flex items-center justify-center gap-1">
                         @csrf @method('PUT')
-                        <input type="number" name="soLuong" value="{{ $ct->soLuong }}" min="1" class="border rounded-lg w-16 text-center px-1 py-1.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none">
-                        <button type="submit" class="text-bhx-600 hover:underline text-xs font-medium">Cập nhật</button>
+                        <button type="button" onclick="this.nextElementSibling.stepDown(); this.closest('form').submit()" class="w-7 h-7 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition" title="Giảm">−</button>
+                        <input type="number" name="soLuong" value="{{ $ct->soLuong }}" min="1" class="border border-gray-200 rounded-lg w-14 text-center px-1 py-1.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none">
+                        <button type="button" onclick="this.previousElementSibling.stepUp(); this.closest('form').submit()" class="w-7 h-7 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition" title="Tăng">+</button>
                     </form>
                 </td>
                 <td class="px-4 py-3 text-right bhx-price">{{ number_format($ct->thanhTien, 0, ',', '.') }}đ</td>
@@ -58,7 +60,7 @@
             </tr>
             @endforeach
         </tbody>
-        <tfoot class="bg-bhx-50">
+        <tfoot class="bg-bhx-50/60">
             <tr>
                 <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-700">Tổng tiền:</td>
                 <td class="px-4 py-3 text-right font-extrabold text-bhx-orange text-lg">{{ number_format($gioHang->tongTien, 0, ',', '.') }}đ</td>
@@ -66,6 +68,7 @@
             </tr>
         </tfoot>
     </table>
+    </div>
 </div>
 
 <div class="mt-4 flex justify-between items-center">

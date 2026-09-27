@@ -7,6 +7,7 @@ use App\Models\DanhGia;
 use App\Models\DonHang;
 use App\Models\SanPham;
 use App\Models\TaiKhoan;
+use App\Services\CodeGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,9 +76,10 @@ class DonHangController extends Controller
                     $sanPham->decrement('soLuong', $ct->soLuong);
                 }
 
-                // Tao DonHang
+                // Tao DonHang (maDon sinh trong transaction, retry sẵn có lo vụ trùng)
                 $donHang = DonHang::create([
                     'maTK' => $user->maTK,
+                    'maDon' => CodeGenerator::next('donhang'),
                     'ngayDat' => now(),
                     'tenNguoiNhan' => $request->tenNguoiNhan,
                     'soDienThoai' => $request->soDienThoai,
@@ -152,7 +154,8 @@ class DonHangController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('tenNguoiNhan', 'like', "%$search%")
-                    ->orWhere('soDienThoai', 'like', "%$search%");
+                    ->orWhere('soDienThoai', 'like', "%$search%")
+                    ->orWhere('maDon', 'like', "%$search%");
             });
         }
         if ($request->filled('trangThai')) {
@@ -160,7 +163,12 @@ class DonHangController extends Controller
         }
         $donHangs = $query->orderByDesc('ngayDat')->paginate(10);
 
-        return view('nhanvien.donhang.index', compact('donHangs'));
+        $thongKe = DonHang::select('trangThai', DB::raw('COUNT(*) AS cnt'))
+            ->groupBy('trangThai')
+            ->pluck('cnt', 'trangThai')
+            ->all();
+
+        return view('nhanvien.donhang.index', compact('donHangs', 'thongKe'));
     }
 
     public function staffDetail(DonHang $donhang)

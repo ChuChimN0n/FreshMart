@@ -7,12 +7,13 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rule;
 
 class DanhMucController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DanhMuc::query();
+        $query = DanhMuc::withCount('sanPhams');
         if ($request->filled('search')) {
             $query->where('tenDM', 'like', '%'.$request->search.'%');
         }
@@ -48,7 +49,14 @@ class DanhMucController extends Controller
     public function update(Request $request, DanhMuc $danhmuc)
     {
         $request->validate([
-            'tenDM' => 'required|string|max:100|unique:DanhMuc,tenDM,maDM,maDM',
+            'tenDM' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('DanhMuc', 'tenDM')->ignore($danhmuc->maDM, 'maDM'),
+            ],
+        ], [
+            'tenDM.unique' => 'Tên Danh mục đã tồn tại',
         ]);
 
         $danhmuc->update(['tenDM' => $request->tenDM]);
@@ -60,14 +68,14 @@ class DanhMucController extends Controller
     public function destroy(DanhMuc $danhmuc): RedirectResponse
     {
         if ($danhmuc->sanPhams()->exists()) {
-            return back()->with('error', 'Không thể xóa danh mục vì còn sản phẩm thuộc danh mục này!');
+            return back()->with('error', 'Danh mục này đã được sử dụng trong sản phẩm, không thể xóa!');
         }
 
         try {
             $danhmuc->delete();
         } catch (QueryException $e) {
             if ($danhmuc->sanPhams()->exists()) {
-                return back()->with('error', 'Không thể xóa danh mục vì còn sản phẩm thuộc danh mục này!');
+                return back()->with('error', 'Danh mục này đã được sử dụng trong sản phẩm, không thể xóa!');
             }
 
             throw $e;

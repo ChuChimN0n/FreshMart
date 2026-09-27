@@ -22,6 +22,7 @@ class SanPham extends Model
         'maNCC',
         'maDM',
         'tenSP',
+        'sku',
         'hinhAnh',
         'donVi',
         'giaBan',

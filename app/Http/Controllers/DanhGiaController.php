@@ -61,8 +61,18 @@ class DanhGiaController extends Controller
                 $q->where('tenSP', 'like', "%$search%");
             });
         }
+        if ($request->filled('soSao') && in_array((int) $request->soSao, [1, 2, 3, 4, 5], true)) {
+            $query->where('soSao', (int) $request->soSao);
+        }
         $danhGias = $query->orderByDesc('maDanhGia')->paginate(10);
 
-        return view('nhanvien.danhgia.index', compact('danhGias'));
+        $thongKe = [
+            'tong' => DanhGia::count(),
+            'trungBinh' => round((float) DanhGia::avg('soSao'), 1),
+            'namSao' => DanhGia::where('soSao', 5)->count(),
+            'thapSao' => DanhGia::where('soSao', '<=', 2)->count(),
+        ];
+
+        return view('nhanvien.danhgia.index', compact('danhGias', 'thongKe'));
     }
 }

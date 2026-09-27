@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\NhaCungCap;
+use Database\Factories\SanPhamFactory;
 use Database\Factories\TaiKhoanFactory;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -85,5 +86,44 @@ class SupplierTest extends TestCase
         ])->assertSessionHasErrors([
             'soDienThoai' => 'Số điện thoại đã được sử dụng',
         ]);
+    }
+
+    public function test_deleting_supplier_with_products_is_rejected_with_vietnamese_message(): void
+    {
+        $this->actingAs(TaiKhoanFactory::new()->admin()->create());
+
+        $ncc = NhaCungCap::create([
+            'tenNCC' => 'NCC A',
+            'soDienThoai' => '0901234567',
+            'email' => 'ncca.real@gmail.com',
+            'diaChi' => 'Ha Noi',
+        ]);
+        SanPhamFactory::new()->create(['maNCC' => $ncc->maNCC]);
+
+        $this->from(route('admin.nhacungcap.index'))
+            ->delete(route('admin.nhacungcap.destroy', $ncc))
+            ->assertRedirect(route('admin.nhacungcap.index'))
+            ->assertSessionHas('error', 'Nhà cung cấp này đã được sử dụng trong sản phẩm, không thể xóa!');
+
+        $this->assertNotNull($ncc->fresh());
+    }
+
+    public function test_deleting_supplier_without_products_succeeds(): void
+    {
+        $this->actingAs(TaiKhoanFactory::new()->admin()->create());
+
+        $ncc = NhaCungCap::create([
+            'tenNCC' => 'NCC A',
+            'soDienThoai' => '0901234567',
+            'email' => 'ncca.real@gmail.com',
+            'diaChi' => 'Ha Noi',
+        ]);
+
+        $this->from(route('admin.nhacungcap.index'))
+            ->delete(route('admin.nhacungcap.destroy', $ncc))
+            ->assertRedirect(route('admin.nhacungcap.index'))
+            ->assertSessionHas('success', 'Xóa nhà cung cấp thành công!');
+
+        $this->assertNull($ncc->fresh());
     }
 }

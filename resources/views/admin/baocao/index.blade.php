@@ -33,5 +33,25 @@
             <div class="mt-4 text-bhx-600 font-medium text-sm">Xem báo cáo <i class="bi bi-arrow-right"></i></div>
         </a>
     @endif
+
+    @if(Auth::user()->canAccessRoute('admin.baocao.nhaphang'))
+        <a href="{{ route('admin.baocao.nhaphang', ['tuNgay' => now()->subDays(30)->format('Y-m-d'), 'denNgay' => now()->format('Y-m-d')]) }}"
+           class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition group">
+            <span class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-2xl mb-4 group-hover:scale-105 transition"><i class="bi bi-box-arrow-in-down"></i></span>
+            <h3 class="text-lg font-bold text-gray-800 group-hover:text-bhx-600 transition">Báo cáo nhập hàng</h3>
+            <p class="text-sm text-gray-500 mt-2">Tình hình nhập hàng từ các nhà cung cấp trong khoảng thời gian.</p>
+            <div class="mt-4 text-bhx-600 font-medium text-sm">Xem báo cáo <i class="bi bi-arrow-right"></i></div>
+        </a>
+    @endif
+
+    @if(Auth::user()->canAccessRoute('admin.baocao.tonkho'))
+        <a href="{{ route('admin.baocao.tonkho') }}"
+           class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition group">
+            <span class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl mb-4 group-hover:scale-105 transition"><i class="bi bi-boxes"></i></span>
+            <h3 class="text-lg font-bold text-gray-800 group-hover:text-bhx-600 transition">Báo cáo tồn kho</h3>
+            <p class="text-sm text-gray-500 mt-2">Tình trạng tồn kho hiện tại và cảnh báo hết hàng.</p>
+            <div class="mt-4 text-bhx-600 font-medium text-sm">Xem báo cáo <i class="bi bi-arrow-right"></i></div>
+        </a>
+    @endif
 </div>
 @endsection

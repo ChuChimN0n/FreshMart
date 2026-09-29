@@ -25,6 +25,9 @@ class RolePermissionSeeder extends Seeder
 
                 if ($role->wasRecentlyCreated) {
                     $role->quyens()->sync($permissionIds);
+                } else {
+                    // DB cũ: gắn thêm quyền mới mà không gỡ quyền hiện có.
+                    $role->quyens()->syncWithoutDetaching($permissionIds);
                 }
             }
         });

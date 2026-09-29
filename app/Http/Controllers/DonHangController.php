@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ChiTietDonHang;
 use App\Models\DanhGia;
 use App\Models\DonHang;
+use App\Models\LichSuKho;
 use App\Models\SanPham;
 use App\Models\TaiKhoan;
 use App\Services\CodeGenerator;
@@ -70,9 +71,10 @@ class DonHangController extends Controller
                         'soLuong' => $ct->soLuong,
                         'donGia' => $sanPham->giaBan,
                         'thanhTien' => $thanhtien,
+                        'tonTruoc' => $sanPham->soLuong,
                     ];
 
-                    // Cap nhat ton kho
+                    // Cap nhat ton kho (lich su BAN_HANG ghi sau khi co maDH)
                     $sanPham->decrement('soLuong', $ct->soLuong);
                 }
 
@@ -88,10 +90,21 @@ class DonHangController extends Controller
                     'trangThai' => DonHang::CHO_XAC_NHAN,
                 ]);
 
-                // Tao ChiTietDonHang
+                // Tao ChiTietDonHang + ghi lich su BAN_HANG
                 foreach ($chiTietData as $ct) {
+                    $tonTruoc = $ct['tonTruoc'];
+                    unset($ct['tonTruoc']);
                     $ct['maDH'] = $donHang->maDH;
                     ChiTietDonHang::create($ct);
+                    LichSuKho::ghiNhan(
+                        maSP: $ct['maSP'],
+                        loaiBienDong: LichSuKho::BAN_HANG,
+                        soLuong: $ct['soLuong'],
+                        tonTruoc: $tonTruoc,
+                        tonSau: $tonTruoc - $ct['soLuong'],
+                        maDH: $donHang->maDH,
+                        maTK: $user->maTK,
+                    );
                 }
 
                 // Xoa gio hang
@@ -140,6 +153,10 @@ class DonHangController extends Controller
         }
 
         if (! $donhang->transitionTo(DonHang::DA_HUY, customerCancellation: true)) {
+            if ($donhang->trangThai === DonHang::DANG_GIAO) {
+                return back()->with('error', 'Đơn hàng đang giao, không thể hủy!');
+            }
+
             return back()->with('error', 'Đơn hàng không thể hủy!');
         }
 

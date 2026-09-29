@@ -120,6 +120,18 @@ class OrderIntegrityTest extends TestCase
         $this->assertSame(2, $detail->fresh()->soLuong);
     }
 
+    public function test_cancel_dang_giao_order_shows_specific_message(): void
+    {
+        $user = TaiKhoanFactory::new()->create();
+        $order = $this->orderFor($user);
+        $this->assertTrue($order->transitionTo(DonHang::DA_XAC_NHAN));
+        $this->assertTrue($order->transitionTo(DonHang::DANG_GIAO));
+
+        $this->actingAs($user)->patch(route('donhang.cancel', $order))
+            ->assertSessionHas('error', 'Đơn hàng đang giao, không thể hủy!');
+        $this->assertSame(DonHang::DANG_GIAO, $order->fresh()->trangThai);
+    }
+
     private function orderFor(TaiKhoan $user): DonHang
     {
         $order = DonHangFactory::new()->create(['maTK' => $user->maTK]);

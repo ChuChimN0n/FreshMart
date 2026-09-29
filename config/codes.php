@@ -30,5 +30,14 @@ return [
             'prefix' => ['type' => 'fixed', 'value' => 'NCC'],
             'pattern' => '/^NCC-\d{4,}$/',
         ],
+        'phieunhap' => [
+            'table' => 'PhieuNhap',
+            'column' => 'maPhieu',
+            'separator' => '-',
+            'pad' => 4,
+            // Prefix theo tháng: PN-YYYYMM => PN-202609-0001 (reset mỗi tháng).
+            'prefix' => ['type' => 'dated', 'format' => 'PN', 'date_format' => 'Ym'],
+            'pattern' => '/^PN-\d{6}-\d{4,}$/',
+        ],
     ],
 ];

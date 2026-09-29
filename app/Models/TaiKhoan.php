@@ -56,6 +56,11 @@ class TaiKhoan extends Authenticatable
         return $this->hasMany(DonHang::class, 'maTK');
     }
 
+    public function phieuNhaps(): HasMany
+    {
+        return $this->hasMany(PhieuNhap::class, 'maNguoiTao');
+    }
+
     public function danhGias(): HasMany
     {
         return $this->hasMany(DanhGia::class, 'maTK');

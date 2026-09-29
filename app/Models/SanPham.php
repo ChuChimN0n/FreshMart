@@ -28,6 +28,7 @@ class SanPham extends Model
         'giaBan',
         'moTa',
         'soLuong',
+        'mucTonToiThieu',
         'trangThai',
     ];
 
@@ -62,6 +63,21 @@ class SanPham extends Model
     public function danhGias(): HasMany
     {
         return $this->hasMany(DanhGia::class, 'maSP');
+    }
+
+    public function chiTietPhieuNhaps(): HasMany
+    {
+        return $this->hasMany(ChiTietPhieuNhap::class, 'maSP');
+    }
+
+    public function lichSuKhos(): HasMany
+    {
+        return $this->hasMany(LichSuKho::class, 'maSP');
+    }
+
+    public function isLowStock(): bool
+    {
+        return $this->soLuong <= (int) $this->mucTonToiThieu;
     }
 
     public function isAvailable(): bool

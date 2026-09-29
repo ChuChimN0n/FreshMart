@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DanhMuc;
 use App\Models\GioHang;
 use App\Models\NhaCungCap;
+use App\Models\NhaCungCapSanPham;
 use App\Models\SanPham;
 use App\Services\CodeGenerator;
 use Illuminate\Database\QueryException;
@@ -42,7 +43,7 @@ class SanPhamController extends Controller
         if ($request->filled('tonKho')) {
             match ($request->tonKho) {
                 'het' => $query->where('soLuong', '<=', 0),
-                'saphet' => $query->whereBetween('soLuong', [1, 5]),
+                'saphet' => $query->where('soLuong', '>', 0)->whereColumn('soLuong', '<=', 'mucTonToiThieu'),
                 'con' => $query->where('soLuong', '>', 0),
                 default => null,
             };
@@ -60,7 +61,7 @@ class SanPhamController extends Controller
         $thongKe = [
             'tong' => SanPham::count(),
             'dangBan' => SanPham::where('trangThai', SanPham::DANG_BAN)->count(),
-            'sapHet' => SanPham::whereBetween('soLuong', [1, 5])->count(),
+            'sapHet' => SanPham::where('soLuong', '>', 0)->whereColumn('soLuong', '<=', 'mucTonToiThieu')->count(),
             'hetHang' => SanPham::where('soLuong', '<=', 0)->count(),
         ];
 
@@ -85,7 +86,7 @@ class SanPhamController extends Controller
             'donVi' => 'required|string|in:kg,quả,bó,gói,chai,hộp,thùng,bịch,cây,củ,cái',
             'giaBan' => 'required|numeric|min:0',
             'moTa' => 'nullable|string',
-            'soLuong' => 'required|integer|min:0',
+            'mucTonToiThieu' => 'required|integer|min:0',
             'trangThai' => ['required', Rule::in([SanPham::DANG_BAN, SanPham::NGUNG_BAN])],
         ], [
             'tenSP.unique' => 'Sản phẩm đã được sử dụng',
@@ -93,7 +94,10 @@ class SanPhamController extends Controller
 
         // SKU luôn do hệ thống sinh, bỏ qua mọi giá trị client gửi lên.
         // insertUnique tự sinh lại mã và retry khi đua trùng unique.
-        $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'soLuong', 'trangThai');
+        // soLuong ban đầu luôn 0 (bỏ qua mọi giá trị client gửi lên):
+        // tồn kho chỉ tăng qua xác nhận phiếu nhập.
+        $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'mucTonToiThieu', 'trangThai')
+            + ['soLuong' => 0];
 
         $newPath = null;
         try {
@@ -104,9 +108,15 @@ class SanPhamController extends Controller
                 }
                 $data['hinhAnh'] = $newPath;
             }
-            CodeGenerator::insertUnique(
+            $sanPham = CodeGenerator::insertUnique(
                 fn () => SanPham::create($data + ['sku' => CodeGenerator::next('sanpham', ['maDM' => $data['maDM']])]),
                 'sku'
+            );
+
+            // Đồng bộ quan hệ NCC - SP để phiếu nhập thấy được sản phẩm mới.
+            NhaCungCapSanPham::firstOrCreate(
+                ['maNCC' => $sanPham->maNCC, 'maSP' => $sanPham->maSP],
+                ['trangThai' => NhaCungCapSanPham::HOAT_DONG]
             );
         } catch (\Throwable $e) {
             if ($newPath) {
@@ -138,12 +148,13 @@ class SanPhamController extends Controller
             'donVi' => 'required|string|in:kg,quả,bó,gói,chai,hộp,thùng,bịch,cây,củ,cái',
             'giaBan' => 'required|numeric|min:0',
             'moTa' => 'nullable|string',
-            'soLuong' => 'required|integer|min:0',
+            'mucTonToiThieu' => 'required|integer|min:0',
             'trangThai' => ['required', Rule::in([SanPham::DANG_BAN, SanPham::NGUNG_BAN])],
         ]);
 
         // SKU đã khóa: không cho đổi qua form sửa, bỏ qua mọi giá trị client gửi lên.
-        $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'soLuong', 'trangThai');
+        // soLuong cũng khóa: tồn chỉ đổi qua nhập/bán/hoàn kho.
+        $data = $request->only('maNCC', 'maDM', 'tenSP', 'donVi', 'giaBan', 'moTa', 'mucTonToiThieu', 'trangThai');
 
         $newPath = null;
         try {
@@ -158,7 +169,16 @@ class SanPhamController extends Controller
             $oldPath = DB::transaction(function () use ($sanpham, $data): ?string {
                 $product = SanPham::whereKey($sanpham->maSP)->lockForUpdate()->firstOrFail();
                 $oldPath = $product->hinhAnh;
+                $oldNCC = $product->maNCC;
                 $product->update($data);
+
+                // Đổi NCC: ghi thêm cặp mới, giữ cặp cũ cho lịch sử phiếu nhập.
+                if ((int) $data['maNCC'] !== (int) $oldNCC) {
+                    NhaCungCapSanPham::firstOrCreate(
+                        ['maNCC' => (int) $data['maNCC'], 'maSP' => $product->maSP],
+                        ['trangThai' => NhaCungCapSanPham::HOAT_DONG]
+                    );
+                }
 
                 return $oldPath;
             }, 3);
@@ -184,6 +204,10 @@ class SanPhamController extends Controller
             return back()->with('error', 'Không thể xóa sản phẩm vì đã có trong đơn hàng!');
         }
 
+        if ($sanpham->chiTietPhieuNhaps()->exists()) {
+            return back()->with('error', 'Không thể xóa sản phẩm vì đã phát sinh nhập hàng!');
+        }
+
         $imagePath = $sanpham->hinhAnh;
         $maGioHangs = $sanpham->chiTietGioHangs()->pluck('maGioHang')->unique()->all();
 
@@ -191,11 +215,16 @@ class SanPhamController extends Controller
             DB::transaction(function () use ($sanpham): void {
                 $sanpham->chiTietGioHangs()->delete();
                 $sanpham->danhGias()->delete();
+                NhaCungCapSanPham::where('maSP', $sanpham->maSP)->delete();
                 $sanpham->delete();
             });
         } catch (QueryException $e) {
             if ($sanpham->chiTietDonHangs()->exists()) {
                 return back()->with('error', 'Không thể xóa sản phẩm vì đã có trong đơn hàng!');
+            }
+
+            if ($sanpham->chiTietPhieuNhaps()->exists() || $sanpham->lichSuKhos()->exists()) {
+                return back()->with('error', 'Không thể xóa sản phẩm vì đã phát sinh nhập/bán hàng!');
             }
 
             throw $e;

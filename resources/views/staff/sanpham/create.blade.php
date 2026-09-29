@@ -53,9 +53,14 @@
                         @error('giaBan') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho <span class="text-red-500">*</span></label>
-                        <input type="number" name="soLuong" value="{{ old('soLuong', 0) }}" min="0" class="bhx-input @error('soLuong') !border-red-500 @enderror" required>
-                        @error('soLuong') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho</label>
+                        <input type="number" value="0" min="0" class="bhx-input bg-gray-50" disabled>
+                        <p class="text-xs text-gray-400 mt-1">Tồn ban đầu bằng 0, tăng qua phiếu nhập.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mức tồn tối thiểu <span class="text-red-500">*</span></label>
+                        <input type="number" name="mucTonToiThieu" value="{{ old('mucTonToiThieu', 10) }}" min="0" class="bhx-input @error('mucTonToiThieu') !border-red-500 @enderror" required>
+                        @error('mucTonToiThieu') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính <span class="text-red-500">*</span></label>

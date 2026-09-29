@@ -24,12 +24,16 @@ class DonHang extends Model
         'diaChi',
         'tongTien',
         'trangThai',
+        'ngayHoanThanh',
+        'ngayHuy',
     ];
 
     protected function casts(): array
     {
         return [
             'ngayDat' => 'datetime',
+            'ngayHoanThanh' => 'datetime',
+            'ngayHuy' => 'datetime',
             'tongTien' => 'decimal:2',
         ];
     }
@@ -42,6 +46,11 @@ class DonHang extends Model
     public function chiTietDonHangs(): HasMany
     {
         return $this->hasMany(ChiTietDonHang::class, 'maDH');
+    }
+
+    public function lichSuKhos(): HasMany
+    {
+        return $this->hasMany(LichSuKho::class, 'maDH');
     }
 
     const CHO_XAC_NHAN = 'CHO_XAC_NHAN';
@@ -106,11 +115,29 @@ class DonHang extends Model
 
             if ($next === self::DA_HUY) {
                 foreach ($order->chiTietDonHangs()->orderBy('maSP')->get() as $detail) {
-                    SanPham::whereKey($detail->maSP)->increment('soLuong', $detail->soLuong);
+                    $sanPham = SanPham::whereKey($detail->maSP)->lockForUpdate()->first();
+                    if ($sanPham) {
+                        $tonTruoc = $sanPham->soLuong;
+                        $sanPham->increment('soLuong', $detail->soLuong);
+                        LichSuKho::ghiNhan(
+                            maSP: $sanPham->maSP,
+                            loaiBienDong: LichSuKho::HOAN_DON,
+                            soLuong: $detail->soLuong,
+                            tonTruoc: $tonTruoc,
+                            tonSau: $tonTruoc + $detail->soLuong,
+                            maDH: $order->maDH,
+                        );
+                    }
                 }
+                $order->ngayHuy = now();
             }
 
-            $order->update(['trangThai' => $next]);
+            if ($next === self::HOAN_THANH) {
+                $order->ngayHoanThanh = now();
+            }
+
+            $order->trangThai = $next;
+            $order->save();
             $this->setRawAttributes($order->getAttributes(), true);
 
             return true;

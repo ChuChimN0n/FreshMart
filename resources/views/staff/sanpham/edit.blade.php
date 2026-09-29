@@ -52,8 +52,13 @@
                         <input type="number" name="giaBan" value="{{ old('giaBan', $sanPham->giaBan) }}" min="0" step="500" class="bhx-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho <span class="text-red-500">*</span></label>
-                        <input type="number" name="soLuong" value="{{ old('soLuong', $sanPham->soLuong) }}" min="0" class="bhx-input" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho</label>
+                        <input type="number" value="{{ $sanPham->soLuong }}" min="0" class="bhx-input bg-gray-50" disabled>
+                        <p class="text-xs text-gray-400 mt-1">Đổi qua nhập / bán / hoàn kho, không sửa tay.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mức tồn tối thiểu <span class="text-red-500">*</span></label>
+                        <input type="number" name="mucTonToiThieu" value="{{ old('mucTonToiThieu', $sanPham->mucTonToiThieu) }}" min="0" class="bhx-input" required>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính <span class="text-red-500">*</span></label>

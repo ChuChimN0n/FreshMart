@@ -27,9 +27,19 @@ class Quyen extends Model
 
     public const REVIEWS = 'Quản lý đánh giá';
 
-    public const ADMIN_PERMISSIONS = [self::SUPPLIERS, self::ACCOUNTS, self::ROLES, self::PRODUCT_REPORT, self::ORDER_REPORT, self::REVENUE_REPORT];
+    public const NHAP_HANG = 'Quản lý nhập hàng';
 
-    public const STAFF_PERMISSIONS = [self::PRODUCTS, self::CATEGORIES, self::ORDERS, self::REVIEWS];
+    public const KHO = 'Quản lý kho';
+
+    public const NHAP_HANG_REPORT = 'Báo cáo nhập hàng';
+
+    public const TON_KHO_REPORT = 'Báo cáo tồn kho';
+
+    public const XUAT_BAO_CAO = 'Xuất báo cáo';
+
+    public const ADMIN_PERMISSIONS = [self::SUPPLIERS, self::ACCOUNTS, self::ROLES, self::PRODUCT_REPORT, self::ORDER_REPORT, self::REVENUE_REPORT, self::NHAP_HANG, self::NHAP_HANG_REPORT, self::TON_KHO_REPORT, self::XUAT_BAO_CAO];
+
+    public const STAFF_PERMISSIONS = [self::PRODUCTS, self::CATEGORIES, self::ORDERS, self::REVIEWS, self::KHO];
 
     public const CUSTOMER_PERMISSIONS = ['Quản lý giỏ hàng', 'Đặt hàng và theo dõi đơn hàng', 'Đánh giá sản phẩm'];
 
@@ -52,12 +62,16 @@ class Quyen extends Model
         'admin.baocao.sanpham' => [self::PRODUCT_REPORT],
         'admin.baocao.donhang' => [self::ORDER_REPORT],
         'admin.baocao.doanhthu' => [self::REVENUE_REPORT],
+        'admin.baocao.nhaphang' => [self::NHAP_HANG_REPORT],
+        'admin.baocao.tonkho' => [self::TON_KHO_REPORT],
         'staff.dashboard' => self::STAFF_PERMISSIONS,
         'staff.suggest.code' => self::STAFF_PERMISSIONS,
         'staff.sanpham.*' => [self::PRODUCTS],
         'staff.danhmuc.*' => [self::CATEGORIES],
         'staff.donhang.*' => [self::ORDERS],
         'staff.danhgia.*' => [self::REVIEWS],
+        'staff.nhaphang.*' => [self::NHAP_HANG],
+        'staff.kho.*' => [self::KHO],
     ];
 
     protected $table = 'Quyen';

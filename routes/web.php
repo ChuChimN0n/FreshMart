@@ -8,7 +8,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonHangController;
 use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KhoController;
 use App\Http\Controllers\NhaCungCapController;
+use App\Http\Controllers\PhieuNhapController;
 use App\Http\Controllers\SanPhamController;
 use App\Http\Controllers\SuggestCodeController;
 use App\Http\Controllers\TaiKhoanController;
@@ -88,6 +90,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission'])->grou
     Route::get('/bao-cao/san-pham', [BaoCaoController::class, 'sanPham'])->name('baocao.sanpham');
     Route::get('/bao-cao/doanh-thu', [BaoCaoController::class, 'doanhThu'])->name('baocao.doanhthu');
     Route::get('/bao-cao/don-hang', [BaoCaoController::class, 'donHang'])->name('baocao.donhang');
+    Route::get('/bao-cao/nhap-hang', [BaoCaoController::class, 'nhapHang'])->name('baocao.nhaphang');
+    Route::get('/bao-cao/ton-kho', [BaoCaoController::class, 'tonKho'])->name('baocao.tonkho');
 });
 
 // ========== STAFF (role:2) ==========
@@ -115,6 +119,18 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'permission'])->grou
     Route::get('/don-hang', [DonHangController::class, 'staffIndex'])->name('donhang.index');
     Route::get('/don-hang/{donhang}', [DonHangController::class, 'staffDetail'])->name('donhang.detail');
     Route::patch('/don-hang/{donhang}/trang-thai', [DonHangController::class, 'updateStatus'])->name('donhang.update');
+
+    // Nhap hang
+    Route::get('/nhap-hang', [PhieuNhapController::class, 'index'])->name('nhaphang.index');
+    Route::get('/nhap-hang/them', [PhieuNhapController::class, 'create'])->name('nhaphang.create');
+    Route::post('/nhap-hang', [PhieuNhapController::class, 'store'])->name('nhaphang.store');
+    Route::get('/nhap-hang/{phieunhap}', [PhieuNhapController::class, 'show'])->name('nhaphang.show');
+    Route::patch('/nhap-hang/{phieunhap}/xac-nhan', [PhieuNhapController::class, 'confirm'])->name('nhaphang.confirm');
+
+    // Kho chung
+    Route::get('/kho', [KhoController::class, 'index'])->name('kho.index');
+    Route::get('/kho/lich-su', [KhoController::class, 'history'])->name('kho.history');
+    Route::get('/kho/canh-bao', [KhoController::class, 'alerts'])->name('kho.alerts');
 
     // Danh gia
     Route::get('/danh-gia', [DanhGiaController::class, 'staffIndex'])->name('danhgia.index');

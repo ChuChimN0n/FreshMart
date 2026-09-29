@@ -144,4 +144,59 @@ class BaoCaoController extends Controller
 
         return view('admin.baocao.donhang', compact('data', 'tuNgay', 'denNgay', 'tongDon', 'tongTien'));
     }
+
+    public function nhapHang(Request $request)
+    {
+        $request->validate(
+            [
+                'tuNgay' => 'required|date',
+                'denNgay' => 'required|date|after_or_equal:tuNgay',
+            ],
+            [
+                'tuNgay.required' => 'Vui lòng chọn ngày bắt đầu.',
+                'tuNgay.date' => 'Ngày bắt đầu không đúng định dạng.',
+                'denNgay.required' => 'Vui lòng chọn ngày kết thúc.',
+                'denNgay.date' => 'Ngày kết thúc không đúng định dạng.',
+                'denNgay.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu. Vui lòng chọn lại ngày.',
+            ],
+            [
+                'tuNgay' => 'ngày bắt đầu',
+                'denNgay' => 'ngày kết thúc',
+            ]
+        );
+
+        $tuNgay = $request->tuNgay;
+        $denNgay = $request->denNgay;
+
+        // Chỉ phiếu DA_XAC_NHAN (view đã lọc sẵn).
+        $data = DB::table('vw_baocao_nhaphang')
+            ->whereDate('ngayTao', '>=', $tuNgay)
+            ->whereDate('ngayTao', '<=', $denNgay)
+            ->orderBy('ngayTao', 'desc')
+            ->get();
+
+        $tongPhieu = $data->pluck('maPN')->unique()->count();
+        $tongSL = $data->sum('soLuong');
+        $tongTien = $data->sum('thanhTien');
+
+        $theoNCC = $data->groupBy('maNCC')->map(fn ($rows) => [
+            'tenNCC' => $rows->first()->tenNCC,
+            'soPhieu' => $rows->pluck('maPN')->unique()->count(),
+            'tongSL' => $rows->sum('soLuong'),
+            'tongTien' => $rows->sum('thanhTien'),
+        ])->values();
+
+        return view('admin.baocao.nhaphang', compact('data', 'tuNgay', 'denNgay', 'tongPhieu', 'tongSL', 'tongTien', 'theoNCC'));
+    }
+
+    public function tonKho()
+    {
+        $data = DB::table('vw_baocao_tonkho')->orderBy('maSP')->get();
+
+        $hetHang = $data->where('trangThaiTon', 'HET_HANG')->count();
+        $sapHet = $data->where('trangThaiTon', 'SAP_HET_HANG')->count();
+        $conHang = $data->where('trangThaiTon', 'CON_HANG')->count();
+
+        return view('admin.baocao.tonkho', compact('data', 'hetHang', 'sapHet', 'conHang'));
+    }
 }

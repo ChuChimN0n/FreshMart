@@ -36,7 +36,7 @@
         <span class="w-11 h-11 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0"><i class="bi bi-exclamation-triangle"></i></span>
         <span>
             <span class="block text-2xl font-bold text-gray-800 leading-none">{{ $thongKe['sapHet'] }}</span>
-            <span class="block text-xs text-gray-500 mt-1">Sắp hết hàng (≤ 5)</span>
+            <span class="block text-xs text-gray-500 mt-1">Sắp hết hàng (dưới ngưỡng)</span>
         </span>
     </a>
     <a href="{{ route('staff.sanpham.index', ['tonKho' => 'het']) }}" class="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition {{ request('tonKho') === 'het' ? 'ring-2 ring-red-500' : '' }}">
@@ -152,12 +152,12 @@
                             <span class="block text-[11px] text-gray-400">/{{ $sp->donVi }}</span>
                         </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <span class="font-semibold {{ $sp->soLuong <= 0 ? 'text-red-600' : ($sp->soLuong <= 5 ? 'text-amber-600' : 'text-gray-800') }}">
+                            <span class="font-semibold {{ $sp->soLuong <= 0 ? 'text-red-600' : ($sp->isLowStock() ? 'text-amber-600' : 'text-gray-800') }}">
                                 {{ $sp->soLuong }} {{ $sp->donVi }}
                             </span>
                             @if($sp->soLuong <= 0)
                                 <span class="block text-[11px] font-medium text-red-500">Hết hàng</span>
-                            @elseif($sp->soLuong <= 5)
+                            @elseif($sp->isLowStock())
                                 <span class="block text-[11px] font-medium text-amber-600">Sắp hết</span>
                             @endif
                         </td>

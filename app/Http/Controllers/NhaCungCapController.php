@@ -123,11 +123,15 @@ class NhaCungCapController extends Controller
             return back()->with('error', 'Nhà cung cấp này đã được sử dụng trong sản phẩm, không thể xóa!');
         }
 
+        if ($nhacungcap->phieuNhaps()->exists()) {
+            return back()->with('error', 'Nhà cung cấp này đã phát sinh phiếu nhập, không thể xóa!');
+        }
+
         try {
             $nhacungcap->delete();
         } catch (QueryException $e) {
-            if ($nhacungcap->sanPhams()->exists()) {
-                return back()->with('error', 'Nhà cung cấp này đã được sử dụng trong sản phẩm, không thể xóa!');
+            if ($nhacungcap->sanPhams()->exists() || $nhacungcap->phieuNhaps()->exists() || $nhacungcap->cungCapSanPhams()->exists()) {
+                return back()->with('error', 'Nhà cung cấp này đã được sử dụng, không thể xóa!');
             }
 
             throw $e;

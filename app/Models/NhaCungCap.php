@@ -25,4 +25,14 @@ class NhaCungCap extends Model
     {
         return $this->hasMany(SanPham::class, 'maNCC');
     }
+
+    public function phieuNhaps(): HasMany
+    {
+        return $this->hasMany(PhieuNhap::class, 'maNCC');
+    }
+
+    public function cungCapSanPhams(): HasMany
+    {
+        return $this->hasMany(NhaCungCapSanPham::class, 'maNCC');
+    }
 }

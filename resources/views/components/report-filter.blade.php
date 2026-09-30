@@ -1,4 +1,4 @@
-@props(['tuNgay' => null, 'denNgay' => null])
+@props(['tuNgay' => null, 'denNgay' => null, 'exportUrl' => null])
 <div class="bg-white rounded-xl shadow-sm p-4 mb-5">
     <form method="GET" class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-end">
         <div>
@@ -10,6 +10,9 @@
             <input type="date" name="denNgay" value="{{ $denNgay ?? request('denNgay') }}" class="bhx-input" required>
         </div>
         <button type="submit" class="bhx-btn-primary"><i class="bi bi-bar-chart"></i> Thống kê</button>
+        @if($exportUrl)
+            <a href="{{ $exportUrl }}" class="bhx-btn-primary text-sm sm:ml-auto"><i class="bi bi-download"></i> Xuất báo cáo</a>
+        @endif
     </form>
 </div>
 

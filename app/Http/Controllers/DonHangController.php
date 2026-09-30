@@ -32,10 +32,25 @@ class DonHangController extends Controller
 
     public function placeOrder(Request $request): RedirectResponse
     {
+        // Chuẩn hóa SĐT trước khi kiểm tra: bỏ khoảng trắng/chấm/dấu gạch ("0901 234 567" -> "0901234567").
+        // Thông tin nhận hàng được sửa mỗi đơn (đặt hộ, giao công ty...) nên chỉ kiểm tra
+        // đúng định dạng VN như hồ sơ, KHÔNG kiểm tra trùng như hồ sơ/NCC.
+        $request->merge([
+            'soDienThoai' => preg_replace('/[\s.\-()]/', '', (string) $request->input('soDienThoai', '')),
+        ]);
+
         $request->validate([
             'tenNguoiNhan' => 'required|string|max:100',
-            'soDienThoai' => 'required|string|max:15',
+            'soDienThoai' => [
+                'required',
+                'string',
+                'max:15',
+                'regex:/^(03|05|07|08|09)[0-9]{8}$/',
+            ],
             'diaChi' => 'required|string|max:255',
+        ], [
+            'soDienThoai.required' => 'Vui lòng nhập số điện thoại.',
+            'soDienThoai.regex' => 'Số điện thoại không đúng định dạng (phải gồm 10 chữ số hợp lệ tại Việt Nam).',
         ]);
 
         $user = Auth::user();

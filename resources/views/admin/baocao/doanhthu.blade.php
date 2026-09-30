@@ -10,7 +10,7 @@
 <x-page-header title="Thống kê doanh thu"
     :subtitle="'Từ '.$tuNgay.' đến '.$denNgay" />
 
-<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" />
+<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" :export-url="route('admin.baocao.doanhthu.export', request()->query())" />
 
 <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
     <x-stat-card :number="number_format($tongDoanhThu, 0, ',', '.').'đ'" label="Tổng doanh thu" icon="bi-cash-stack" color="bhx" />

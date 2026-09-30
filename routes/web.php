@@ -92,6 +92,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'permission'])->grou
     Route::get('/bao-cao/don-hang', [BaoCaoController::class, 'donHang'])->name('baocao.donhang');
     Route::get('/bao-cao/nhap-hang', [BaoCaoController::class, 'nhapHang'])->name('baocao.nhaphang');
     Route::get('/bao-cao/ton-kho', [BaoCaoController::class, 'tonKho'])->name('baocao.tonkho');
+    Route::get('/bao-cao/san-pham/xuat', [BaoCaoController::class, 'exportSanPham'])->name('baocao.sanpham.export');
+    Route::get('/bao-cao/don-hang/xuat', [BaoCaoController::class, 'exportDonHang'])->name('baocao.donhang.export');
+    Route::get('/bao-cao/doanh-thu/xuat', [BaoCaoController::class, 'exportDoanhThu'])->name('baocao.doanhthu.export');
+    Route::get('/bao-cao/nhap-hang/xuat', [BaoCaoController::class, 'exportNhapHang'])->name('baocao.nhaphang.export');
+    Route::get('/bao-cao/ton-kho/xuat', [BaoCaoController::class, 'exportTonKho'])->name('baocao.tonkho.export');
 });
 
 // ========== STAFF (role:2) ==========

@@ -7,7 +7,8 @@
     <span class="text-gray-800 font-medium">Tồn kho</span>
 </nav>
 
-<x-page-header title="Báo cáo tồn kho" subtitle="Tình trạng tồn kho hiện tại của kho chung" />
+<x-page-header title="Báo cáo tồn kho" subtitle="Tình trạng tồn kho hiện tại của kho chung"
+    :action-url="route('admin.baocao.tonkho.export')" action-label="Xuất báo cáo" action-icon="bi-download" />
 
 <div class="grid grid-cols-2 xl:grid-cols-3 gap-4 mb-5">
     <x-stat-card :number="number_format($conHang)" label="Còn hàng" icon="bi-check-circle" color="green" />

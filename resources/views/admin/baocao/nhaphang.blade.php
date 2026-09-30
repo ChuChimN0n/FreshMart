@@ -10,11 +10,11 @@
 <x-page-header title="Báo cáo nhập hàng"
     :subtitle="'Từ '.$tuNgay.' đến '.$denNgay" />
 
-<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" />
+<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" :export-url="route('admin.baocao.nhaphang.export', request()->query())" />
 
 <div class="grid grid-cols-2 xl:grid-cols-3 gap-4 mb-5">
     <x-stat-card :number="number_format($tongPhieu)" label="Phiếu đã xác nhận" icon="bi-box-arrow-in-down" color="green" />
-    <x-stat-card :number="number_format($tongSL)" label="Tổng SL nhập" icon="bi-box-seam" color="blue" />
+    <x-stat-card :number="number_format($tongSL)" label="Tổng số lượng nhập" icon="bi-box-seam" color="blue" />
     <x-stat-card :number="number_format($tongTien, 0, ',', '.').'đ'" label="Tổng giá trị nhập" icon="bi-cash-stack" color="bhx" />
 </div>
 
@@ -74,7 +74,7 @@
                     <tr class="text-xs uppercase tracking-wide text-gray-500">
                         <th class="px-4 py-3 text-left font-semibold">Nhà cung cấp</th>
                         <th class="px-4 py-3 text-center font-semibold">Số phiếu</th>
-                        <th class="px-4 py-3 text-center font-semibold">Tổng SL</th>
+                        <th class="px-4 py-3 text-center font-semibold">Tổng số lượng</th>
                         <th class="px-4 py-3 text-right font-semibold">Tổng tiền</th>
                     </tr>
                 </thead>

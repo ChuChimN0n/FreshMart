@@ -132,6 +132,43 @@ class OrderIntegrityTest extends TestCase
         $this->assertSame(DonHang::DANG_GIAO, $order->fresh()->trangThai);
     }
 
+    public function test_place_order_rejects_invalid_phone_with_vn_message(): void
+    {
+        $user = TaiKhoanFactory::new()->create();
+        $cart = $user->gioHang()->create(['tongTien' => 100000]);
+        $product = SanPhamFactory::new()->create();
+        ChiTietGioHangFactory::new()->create(['maGioHang' => $cart->maGioHang, 'maSP' => $product->maSP]);
+
+        foreach (['abc', '123456789', '02947528371'] as $phone) {
+            $this->actingAs($user)->post(route('donhang.place'), [
+                'tenNguoiNhan' => 'Nguyễn An',
+                'soDienThoai' => $phone,
+                'diaChi' => 'Hà Nội',
+            ])->assertSessionHasErrors([
+                'soDienThoai' => 'Số điện thoại không đúng định dạng (phải gồm 10 chữ số hợp lệ tại Việt Nam).',
+            ]);
+        }
+
+        $this->assertDatabaseCount('DonHang', 0);
+        $this->assertSame(10, $product->fresh()->soLuong);
+    }
+
+    public function test_place_order_normalizes_spaced_phone_and_stores_standard_form(): void
+    {
+        $user = TaiKhoanFactory::new()->create();
+        $cart = $user->gioHang()->create(['tongTien' => 100000]);
+        $product = SanPhamFactory::new()->create();
+        ChiTietGioHangFactory::new()->create(['maGioHang' => $cart->maGioHang, 'maSP' => $product->maSP]);
+
+        $this->actingAs($user)->post(route('donhang.place'), [
+            'tenNguoiNhan' => 'Nguyễn An',
+            'soDienThoai' => '0901 234 567',
+            'diaChi' => 'Hà Nội',
+        ])->assertRedirectToRoute('donhang.index')->assertSessionHas('success');
+
+        $this->assertDatabaseHas('DonHang', ['maTK' => $user->maTK, 'soDienThoai' => '0901234567']);
+    }
+
     private function orderFor(TaiKhoan $user): DonHang
     {
         $order = DonHangFactory::new()->create(['maTK' => $user->maTK]);

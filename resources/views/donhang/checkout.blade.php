@@ -37,7 +37,7 @@
             </div>
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
-                <input type="text" name="soDienThoai" value="{{ old('soDienThoai', Auth::user()->soDienThoai) }}" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('soDienThoai') border-red-500 @enderror" required>
+                <input type="text" name="soDienThoai" value="{{ old('soDienThoai', Auth::user()->soDienThoai) }}" maxlength="15" inputmode="numeric" placeholder="VD: 0901234567" class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none @error('soDienThoai') border-red-500 @enderror" required>
                 @error('soDienThoai') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
             <div class="mb-4">

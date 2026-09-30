@@ -37,7 +37,7 @@
             <label class="block text-sm font-medium text-gray-600 mt-4 mb-1" for="ghiChu">Ghi chú</label>
             <textarea name="ghiChu" id="ghiChu" rows="3" class="bhx-input" placeholder="Ghi chú thêm...">{{ old('ghiChu') }}</textarea>
             <div class="mt-5 rounded-xl bg-gray-50 p-4 text-sm">
-                <div class="flex justify-between text-gray-500"><span>Tổng SL</span><span id="tongSL" class="font-semibold text-gray-800">0</span></div>
+                <div class="flex justify-between text-gray-500"><span>Tổng số lượng</span><span id="tongSL" class="font-semibold text-gray-800">0</span></div>
                 <div class="flex justify-between mt-1"><span class="font-semibold text-gray-700">Tổng tiền</span><span id="tongTien" class="font-bold text-bhx-700 text-lg">0đ</span></div>
             </div>
             <button type="submit" class="bhx-btn-primary w-full mt-4 justify-center">

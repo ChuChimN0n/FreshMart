@@ -10,7 +10,7 @@
 <x-page-header title="Thống kê sản phẩm"
     :subtitle="'Từ '.$tuNgay.' đến '.$denNgay" />
 
-<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" />
+<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" :export-url="route('admin.baocao.sanpham.export', request()->query())" />
 
 <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
     @foreach($tongBanTheoDonVi as $donVi => $soLuong)

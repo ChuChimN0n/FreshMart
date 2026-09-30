@@ -10,7 +10,7 @@
 <x-page-header title="Thống kê đơn hàng"
     :subtitle="'Từ '.$tuNgay.' đến '.$denNgay" />
 
-<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" />
+<x-report-filter :tuNgay="$tuNgay" :denNgay="$denNgay" :export-url="route('admin.baocao.donhang.export', request()->query())" />
 
 @php $donHangBadges = \App\Models\DonHang::TRANG_THAI_BADGE; @endphp
 <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">

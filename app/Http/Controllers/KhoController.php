@@ -43,7 +43,7 @@ class KhoController extends Controller
 
     public function history(Request $request)
     {
-        $query = LichSuKho::with('sanPham');
+        $query = LichSuKho::with(['sanPham', 'phieuNhap', 'donHang']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search): void {

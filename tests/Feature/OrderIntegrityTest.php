@@ -169,6 +169,21 @@ class OrderIntegrityTest extends TestCase
         $this->assertDatabaseHas('DonHang', ['maTK' => $user->maTK, 'soDienThoai' => '0901234567']);
     }
 
+    public function test_cart_stepper_shows_stock_hint_and_disables_at_limits(): void
+    {
+        $owner = TaiKhoanFactory::new()->create();
+        $cart = $owner->gioHang()->create(['tongTien' => 50000]);
+        $low = SanPhamFactory::new()->create(['soLuong' => 1]);
+        $plenty = SanPhamFactory::new()->create(['soLuong' => 50]);
+        ChiTietGioHangFactory::new()->create(['maGioHang' => $cart->maGioHang, 'maSP' => $low->maSP, 'soLuong' => 1]);
+        ChiTietGioHangFactory::new()->create(['maGioHang' => $cart->maGioHang, 'maSP' => $plenty->maSP, 'soLuong' => 2]);
+
+        $response = $this->actingAs($owner)->get(route('giohang.index'))->assertOk();
+
+        $response->assertSee('Còn 1', false)->assertSee('Còn 50', false);
+        $response->assertSee('Chỉ còn 1 sản phẩm', false);
+    }
+
     private function orderFor(TaiKhoan $user): DonHang
     {
         $order = DonHangFactory::new()->create(['maTK' => $user->maTK]);

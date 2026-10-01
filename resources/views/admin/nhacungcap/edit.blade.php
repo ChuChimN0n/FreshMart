@@ -12,12 +12,13 @@
     <p class="text-sm text-gray-500 mt-1">Mã #{{ $nhaCungCap->maNCC }}</p>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm p-5 max-w-xl">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+<div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-5">
     <form method="POST" action="{{ route('admin.nhacungcap.update', $nhaCungCap) }}">
         @csrf @method('PUT')
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Mã NCC <i class="bi bi-lock-fill text-xs text-gray-400" title="Mã do hệ thống quản lý"></i></label>
-            <input type="text" value="{{ $nhaCungCap->codeNCC ?: '—' }}" readonly
+            <input type="text" id="codeNCCStatic" value="{{ $nhaCungCap->codeNCC ?: '—' }}" readonly
                    class="bhx-input font-mono bg-gray-50 text-gray-600">
             <p class="text-xs text-gray-400 mt-1">Mã nội bộ #{{ $nhaCungCap->maNCC }} và mã NCC không thay đổi.</p>
         </div>
@@ -48,4 +49,38 @@
         </div>
     </form>
 </div>
+<aside class="bg-white rounded-xl shadow-sm p-5 lg:sticky lg:top-5">
+    <h2 class="font-bold text-gray-800 mb-1 flex items-center gap-2">
+        <span class="w-7 h-7 rounded-lg bg-bhx-50 text-bhx-600 flex items-center justify-center"><i class="bi bi-truck"></i></span>
+        Xem trước nhà cung cấp
+    </h2>
+    <p class="text-sm text-gray-500 mb-4">Thông tin sẽ được lưu.</p>
+    <dl class="text-sm space-y-2">
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Tên NCC</dt><dd id="ttTen" class="font-medium text-right">—</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Mã NCC</dt><dd id="ttMa" class="font-mono text-right text-gray-600">—</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Số điện thoại</dt><dd id="ttSdt" class="font-medium text-right">—</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Email</dt><dd id="ttEmail" class="font-medium text-right break-all">—</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Địa chỉ</dt><dd id="ttDiaChi" class="text-right">—</dd></div>
+    </dl>
+</aside>
+</div>
+
+<script>
+    function updateTomTatNCC() {
+        var get = function (name) {
+            var el = document.querySelector('input[name=' + name + ']');
+            return (el && el.value.trim()) || '—';
+        };
+        document.getElementById('ttTen').textContent = get('tenNCC');
+        document.getElementById('ttSdt').textContent = get('soDienThoai');
+        document.getElementById('ttEmail').textContent = get('email');
+        document.getElementById('ttDiaChi').textContent = get('diaChi');
+        var code = document.getElementById('codeNCCStatic');
+        document.getElementById('ttMa').textContent = (code && code.value.trim()) || '—';
+    }
+    document.querySelectorAll('input[name=tenNCC], input[name=soDienThoai], input[name=email], input[name=diaChi]').forEach(function (el) {
+        el.addEventListener('input', updateTomTatNCC);
+    });
+    updateTomTatNCC();
+</script>
 @endsection

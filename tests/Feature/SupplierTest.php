@@ -126,4 +126,23 @@ class SupplierTest extends TestCase
 
         $this->assertNull($ncc->fresh());
     }
+
+    public function test_supplier_forms_render_with_preview_panel(): void
+    {
+        $this->actingAs(TaiKhoanFactory::new()->admin()->create());
+
+        $ncc = NhaCungCap::create([
+            'tenNCC' => 'NCC Preview',
+            'soDienThoai' => '0901234567',
+            'email' => 'preview.real@gmail.com',
+            'diaChi' => 'Ha Noi',
+        ]);
+
+        $this->get(route('admin.nhacungcap.create'))
+            ->assertOk()
+            ->assertSee('Xem trước nhà cung cấp', false);
+        $this->get(route('admin.nhacungcap.edit', $ncc))
+            ->assertOk()
+            ->assertSee('Xem trước nhà cung cấp', false);
+    }
 }

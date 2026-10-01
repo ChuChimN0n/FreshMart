@@ -24,7 +24,7 @@
         <tbody class="divide-y divide-gray-100">
             @foreach($gioHang->chiTietGioHangs as $ct)
             <tr class="hover:bg-bhx-50/50 transition">
-                <td class="px-4 py-3">
+                <td class="px-4 py-3 align-middle">
                     <div class="flex items-center gap-3">
                         @if($ct->sanPham?->hinhAnh)
                             <img src="{{ asset('storage/'.$ct->sanPham->hinhAnh) }}" alt="{{ $ct->sanPham->tenSP }}" class="w-14 h-14 object-cover rounded-lg">
@@ -32,27 +32,72 @@
                             <div class="w-14 h-14 bg-bhx-50 flex items-center justify-center rounded-lg text-bhx-300 text-xl"><i class="bi bi-basket"></i></div>
                         @endif
                         <div>
-                            <p class="font-medium text-gray-800">{{ $ct->sanPham->tenSP ?? 'SP đã xóa' }}</p>
                             @if($ct->sanPham)
-                                <span class="text-xs text-gray-400">{{ $ct->sanPham->danhMuc->tenDM ?? '' }}</span>
+                                <a href="{{ route('home.show', $ct->sanPham) }}" class="font-medium text-gray-800 hover:text-bhx-600 transition">{{ $ct->sanPham->tenSP }}</a>
+                                <span class="block text-xs text-gray-400">{{ $ct->sanPham->danhMuc->tenDM ?? '' }}</span>
+                            @else
+                                <p class="font-medium text-gray-800">SP đã xóa</p>
                             @endif
                         </div>
                     </div>
                 </td>
-                <td class="px-4 py-3 text-right">{{ number_format($ct->donGia, 0, ',', '.') }}đ</td>
-                <td class="px-4 py-3">
-                    <form method="POST" action="{{ route('giohang.update', $ct) }}" class="flex items-center justify-center gap-1">
-                        @csrf @method('PUT')
-                        <button type="button" onclick="this.nextElementSibling.stepDown(); this.closest('form').submit()" class="w-7 h-7 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition" title="Giảm">−</button>
-                        <input type="number" name="soLuong" value="{{ $ct->soLuong }}" min="1" class="border border-gray-200 rounded-lg w-14 text-center px-1 py-1.5 text-sm focus:ring-2 focus:ring-bhx-500 focus:outline-none">
-                        <button type="button" onclick="this.previousElementSibling.stepUp(); this.closest('form').submit()" class="w-7 h-7 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition" title="Tăng">+</button>
-                    </form>
+                <td class="px-4 py-3 text-right align-middle">{{ number_format($ct->donGia, 0, ',', '.') }}đ</td>
+                <td class="px-4 py-4 align-middle">
+                    <div class="relative flex justify-center">
+                        @php $tonKho = $ct->sanPham?->soLuong ?? $ct->soLuong; @endphp
+                        <form method="POST" action="{{ route('giohang.update', $ct) }}" data-stepper>
+                            @csrf @method('PUT')
+                            <div class="inline-flex items-stretch rounded-md border border-gray-200 bg-white shadow-sm overflow-hidden">
+                                <button type="button" data-step="-1" title="Giảm"
+                                    class="w-9 h-9 flex items-center justify-center leading-none text-gray-600 transition hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 disabled:pointer-events-none"
+                                    {{ $ct->soLuong <= 1 ? 'disabled' : '' }}>
+                                    <i class="bi bi-dash leading-none"></i>
+                                </button>
+                                <input type="number" name="soLuong" value="{{ $ct->soLuong }}" min="1" max="{{ $tonKho }}" data-max="{{ $tonKho }}"
+                                    class="w-12 h-9 p-0 text-center font-medium text-gray-800 text-sm border-x border-gray-200 focus:ring-0 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                <button type="button" data-step="1" title="{{ $ct->soLuong >= $tonKho ? 'Chỉ còn '.$tonKho.' sản phẩm' : 'Tăng' }}"
+                                    class="w-9 h-9 flex items-center justify-center leading-none text-gray-600 transition hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 disabled:pointer-events-none"
+                                    {{ $ct->soLuong >= $tonKho ? 'disabled' : '' }}>
+                                    <i class="bi bi-plus leading-none"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <span class="absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] leading-none text-gray-400">Còn {{ $tonKho }}</span>
+                    </div>
+                    <script>
+                        (function () {
+                            var wrap = document.currentScript.previousElementSibling;
+                            var form = wrap && wrap.tagName === 'FORM'
+                                ? wrap
+                                : (wrap ? wrap.querySelector('form[data-stepper]') : null);
+                            if (!form) return;
+                            var input = form.querySelector('input[name=soLuong]');
+                            var max = parseInt(input.dataset.max) || 1;
+                            form.querySelectorAll('[data-step]').forEach(function (btn) {
+                                btn.addEventListener('click', function () {
+                                    var next = (parseInt(input.value) || 1) + parseInt(btn.dataset.step);
+                                    next = Math.min(Math.max(next, 1), max);
+                                    if (next === parseInt(input.value)) return;
+                                    input.value = next;
+                                    btn.disabled = true;
+                                    form.submit();
+                                });
+                            });
+                            input.addEventListener('change', function () {
+                                var next = parseInt(input.value) || 1;
+                                input.value = Math.min(Math.max(next, 1), max);
+                                form.submit();
+                            });
+                        })();
+                    </script>
                 </td>
-                <td class="px-4 py-3 text-right bhx-price">{{ number_format($ct->thanhTien, 0, ',', '.') }}đ</td>
-                <td class="px-4 py-3 text-center">
-                    <form method="POST" action="{{ route('giohang.remove', $ct) }}">
+                <td class="px-4 py-3 text-right bhx-price align-middle">{{ number_format($ct->thanhTien, 0, ',', '.') }}đ</td>
+                <td class="px-4 py-3 text-center align-middle">
+                    <form method="POST" action="{{ route('giohang.remove', $ct) }}" class="inline">
                         @csrf @method('DELETE')
-                        <button type="submit" class="text-bhx-red hover:underline text-sm" onclick="return confirm('Xóa sản phẩm này?')">
+                        <button type="submit" title="Xóa sản phẩm"
+                            class="w-8 h-8 rounded-lg bg-red-50 text-bhx-red hover:bg-red-100 inline-flex items-center justify-center transition"
+                            onclick="return confirm('Xóa sản phẩm này?')">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </form>

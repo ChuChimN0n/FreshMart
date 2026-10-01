@@ -122,10 +122,9 @@ class AuthController extends Controller
             return $taiKhoan;
         });
 
-        Auth::login($taiKhoan);
-        $request->session()->regenerate();
-
-        return redirect('/')->with('success', 'Đăng ký thành công!');
+        return redirect()->route('login')
+            ->with('success', 'Đăng ký thành công! Vui lòng đăng nhập.')
+            ->withInput(['tenDangNhap' => $taiKhoan->tenDangNhap]);
     }
 
     public function showProfile()

@@ -36,12 +36,10 @@
                 <td class="px-4 py-3">
                     <div class="flex items-center justify-end gap-2">
                     <a href="{{ route('donhang.detail', $dh) }}" class="text-bhx-600 hover:underline font-medium whitespace-nowrap"><i class="bi bi-eye"></i> Chi tiết</a>
-                    @if($dh->canCancel())
                     <form method="POST" action="{{ route('donhang.cancel', $dh) }}">
                         @csrf @method('PATCH')
                         <button type="submit" class="text-bhx-red hover:underline whitespace-nowrap" onclick="return confirm('Bạn muốn hủy đơn này?')"><i class="bi bi-x-circle"></i> Hủy</button>
                     </form>
-                    @endif
                     </div>
                 </td>
             </tr>

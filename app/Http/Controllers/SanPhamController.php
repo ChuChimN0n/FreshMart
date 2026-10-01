@@ -84,12 +84,13 @@ class SanPhamController extends Controller
             'tenSP' => 'required|string|max:150|unique:SanPham,tenSP',
             'hinhAnh' => 'nullable|image|max:2048',
             'donVi' => 'required|string|in:kg,quả,bó,gói,chai,hộp,thùng,bịch,cây,củ,cái',
-            'giaBan' => 'required|numeric|min:0',
+            'giaBan' => 'required|numeric|min:1000',
             'moTa' => 'nullable|string',
             'mucTonToiThieu' => 'required|integer|min:0',
             'trangThai' => ['required', Rule::in([SanPham::DANG_BAN, SanPham::NGUNG_BAN])],
         ], [
             'tenSP.unique' => 'Sản phẩm đã được sử dụng',
+            'giaBan.min' => 'Giá bán tối thiểu 1.000 đồng.',
         ]);
 
         // SKU luôn do hệ thống sinh, bỏ qua mọi giá trị client gửi lên.
@@ -146,10 +147,12 @@ class SanPhamController extends Controller
             'tenSP' => 'required|string|max:150',
             'hinhAnh' => 'nullable|image|max:2048',
             'donVi' => 'required|string|in:kg,quả,bó,gói,chai,hộp,thùng,bịch,cây,củ,cái',
-            'giaBan' => 'required|numeric|min:0',
+            'giaBan' => 'required|numeric|min:1000',
             'moTa' => 'nullable|string',
             'mucTonToiThieu' => 'required|integer|min:0',
             'trangThai' => ['required', Rule::in([SanPham::DANG_BAN, SanPham::NGUNG_BAN])],
+        ], [
+            'giaBan.min' => 'Giá bán tối thiểu 1.000 đồng.',
         ]);
 
         // SKU đã khóa: không cho đổi qua form sửa, bỏ qua mọi giá trị client gửi lên.

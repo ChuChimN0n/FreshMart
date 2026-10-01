@@ -160,6 +160,9 @@
                             @elseif($sp->isLowStock())
                                 <span class="block text-[11px] font-medium text-amber-600">Sắp hết</span>
                             @endif
+                            @if(($sp->soLuong <= 0 || $sp->isLowStock()) && Auth::user()->canAccessRoute('staff.nhaphang.create'))
+                                <a href="{{ route('staff.nhaphang.create', ['maNCC' => $sp->maNCC, 'maSP' => $sp->maSP]) }}" class="block text-[11px] font-medium text-green-600 hover:text-green-700 hover:underline mt-0.5">Nhập hàng <i class="bi bi-arrow-right"></i></a>
+                            @endif
                         </td>
                         <td class="px-4 py-3">
                             @if($sp->trangThai == \App\Models\SanPham::DANG_BAN)

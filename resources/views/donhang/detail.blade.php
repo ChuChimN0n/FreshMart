@@ -63,6 +63,10 @@
             <p><strong>Địa chỉ:</strong> {{ $donHang->diaChi }}</p>
         </div>
         <p class="mt-4 text-lg font-extrabold text-bhx-orange">Tổng: {{ number_format($donHang->tongTien, 0, ',', '.') }}đ</p>
+        <form method="POST" action="{{ route('donhang.cancel', $donHang) }}" class="mt-4">
+            @csrf @method('PATCH')
+            <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-bhx-red hover:bg-red-50 transition" onclick="return confirm('Bạn muốn hủy đơn này?')"><i class="bi bi-x-circle"></i> Hủy đơn hàng</button>
+        </form>
     </div>
 
     <div class="bhx-card p-5">

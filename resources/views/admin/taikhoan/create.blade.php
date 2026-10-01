@@ -12,7 +12,8 @@
     <p class="text-sm text-gray-500 mt-1">Tạo tài khoản quản trị, nhân viên hoặc khách hàng</p>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm p-5 max-w-2xl">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+<div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-5">
     <form method="POST" action="{{ route('admin.taikhoan.store') }}">
         @csrf
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,4 +69,54 @@
         </div>
     </form>
 </div>
+<aside class="bg-white rounded-xl shadow-sm p-5 lg:sticky lg:top-5">
+    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <span class="w-7 h-7 rounded-lg bg-bhx-50 text-bhx-600 flex items-center justify-center"><i class="bi bi-person-badge"></i></span>
+        Tóm tắt tài khoản
+    </h2>
+    <div class="flex items-center gap-3 mb-4">
+        <span id="ttAvatar" class="w-12 h-12 rounded-full bg-bhx-100 text-bhx-700 flex items-center justify-center text-xl font-bold shrink-0">?</span>
+        <div class="min-w-0">
+            <p id="ttHoTen" class="font-bold text-gray-800 truncate">—</p>
+            <p id="ttVaiTro" class="text-sm text-gray-500">—</p>
+        </div>
+    </div>
+    <dl class="text-sm space-y-2">
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Email</dt><dd id="ttEmail" class="font-medium text-right break-all">—</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Số điện thoại</dt><dd id="ttSdt" class="font-medium text-right">—</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-gray-500">Trạng thái</dt><dd id="ttTrangThai"><span class="bhx-tag bg-green-100 text-green-700">Hoạt động</span></dd></div>
+    </dl>
+</aside>
+</div>
+
+<script>
+    function updateTomTatTK() {
+        var get = function (name) {
+            var el = document.querySelector('input[name=' + name + ']');
+            return (el && el.value.trim()) || '—';
+        };
+        var hoTen = get('hoTen');
+        document.getElementById('ttHoTen').textContent = hoTen;
+        document.getElementById('ttAvatar').textContent = hoTen === '—' ? '?' : hoTen.charAt(0).toUpperCase();
+        document.getElementById('ttEmail').textContent = get('email');
+        document.getElementById('ttSdt').textContent = get('soDienThoai');
+        var roleText = document.querySelector('[data-searchable-select] [data-ss-input]');
+        document.getElementById('ttVaiTro').textContent = (roleText && roleText.value.trim()) || '—';
+        var tt = document.querySelector('select[name=trangThai]');
+        var badge = document.getElementById('ttTrangThai');
+        if (tt && tt.value === 'KHOA') {
+            badge.innerHTML = '<span class="bhx-tag bg-red-100 text-red-700">Bị khóa</span>';
+        } else {
+            badge.innerHTML = '<span class="bhx-tag bg-green-100 text-green-700">Hoạt động</span>';
+        }
+    }
+    document.querySelectorAll('input[name=hoTen], input[name=email], input[name=soDienThoai]').forEach(function (el) {
+        el.addEventListener('input', updateTomTatTK);
+    });
+    var roleHidden = document.querySelector('input[name=maVT][data-ss-value]');
+    if (roleHidden) roleHidden.addEventListener('change', updateTomTatTK);
+    var statusSel = document.querySelector('select[name=trangThai]');
+    if (statusSel) statusSel.addEventListener('change', updateTomTatTK);
+    updateTomTatTK();
+</script>
 @endsection

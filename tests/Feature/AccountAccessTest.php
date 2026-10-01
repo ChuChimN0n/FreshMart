@@ -275,9 +275,13 @@ class AccountAccessTest extends TestCase
             'diaChi' => 'Ha Noi',
             'matKhau' => 'password123',
             'matKhau_confirmation' => 'password123',
-        ])->assertRedirectToRoute('home');
-        $this->assertAuthenticated();
+        ])->assertRedirectToRoute('login')
+            ->assertSessionHas('success', 'Đăng ký thành công! Vui lòng đăng nhập.');
+        $this->assertGuest();
         $this->assertDatabaseHas('TaiKhoan', ['tenDangNhap' => 'khachhang1234567']);
+
+        // Tên đăng nhập vừa tạo được điền sẵn ở form đăng nhập.
+        $this->get(route('login'))->assertOk()->assertSee('khachhang1234567', false);
     }
 
     public function test_customer_can_change_password_with_valid_data(): void
@@ -289,5 +293,18 @@ class AccountAccessTest extends TestCase
             'matKhau_moi_confirmation' => 'newpass123',
         ])->assertSessionHas('success');
         $this->assertTrue(Hash::check('newpass123', $user->fresh()->matKhau));
+    }
+
+    public function test_account_forms_render_with_summary_panel(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+        $staff = TaiKhoanFactory::new()->staff()->create();
+
+        $this->actingAs($admin)->get(route('admin.taikhoan.create'))
+            ->assertOk()
+            ->assertSee('Tóm tắt tài khoản', false);
+        $this->actingAs($admin)->get(route('admin.taikhoan.edit', $staff))
+            ->assertOk()
+            ->assertSee('Tóm tắt tài khoản', false);
     }
 }

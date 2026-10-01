@@ -12,7 +12,8 @@
     <p class="text-sm text-gray-500 mt-1">Danh mục giúp nhóm các sản phẩm cùng loại</p>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm p-5 max-w-xl">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+<div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-5">
     <form method="POST" action="{{ route('staff.danhmuc.store') }}">
         @csrf
         <div class="mb-4">
@@ -26,4 +27,28 @@
         </div>
     </form>
 </div>
+<aside class="bg-white rounded-xl shadow-sm p-5 lg:sticky lg:top-5">
+    <h2 class="font-bold text-gray-800 mb-1 flex items-center gap-2">
+        <span class="w-7 h-7 rounded-lg bg-bhx-50 text-bhx-600 flex items-center justify-center"><i class="bi bi-eye"></i></span>
+        Xem trước hiển thị
+    </h2>
+    <p class="text-sm text-gray-500 mb-4">Cách danh mục hiện ở trang danh sách.</p>
+    <div class="rounded-lg bg-gray-50 p-4 text-center">
+        <span id="ttBadge" class="bhx-tag bg-gray-100 text-gray-600">Tên danh mục...</span>
+    </div>
+    <p class="text-xs text-gray-400 mt-4">Nên đặt ngắn gọn, không trùng danh mục có sẵn.</p>
+</aside>
+</div>
+
+<script>
+    (function () {
+        var input = document.querySelector('input[name=tenDM]');
+        var badge = document.getElementById('ttBadge');
+        function update() {
+            badge.textContent = (input.value.trim()) || 'Tên danh mục...';
+        }
+        input.addEventListener('input', update);
+        update();
+    })();
+</script>
 @endsection

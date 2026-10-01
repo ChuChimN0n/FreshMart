@@ -79,13 +79,21 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-right text-gray-500 whitespace-nowrap">{{ $ls->tonTruoc }} → {{ $ls->tonSau }}</td>
-                        <td class="px-4 py-3 text-gray-500">
+                        <td class="px-4 py-3 whitespace-nowrap">
                             @if($ls->maPN)
-                                PN #{{ $ls->maPN }}
+                                @if(Auth::user()->canAccessRoute('staff.nhaphang.show'))
+                                    <a href="{{ route('staff.nhaphang.show', $ls->maPN) }}" class="font-medium text-bhx-600 hover:text-bhx-700 hover:underline">{{ $ls->phieuNhap->maPhieu ?? 'PN #'.$ls->maPN }}</a>
+                                @else
+                                    <span class="font-medium text-gray-700">{{ $ls->phieuNhap->maPhieu ?? 'PN #'.$ls->maPN }}</span>
+                                @endif
                             @elseif($ls->maDH)
-                                ĐH #{{ $ls->maDH }}
+                                @if(Auth::user()->canAccessRoute('staff.donhang.detail'))
+                                    <a href="{{ route('staff.donhang.detail', $ls->maDH) }}" class="font-medium text-bhx-600 hover:text-bhx-700 hover:underline">{{ $ls->donHang->maDon ?? 'ĐH #'.$ls->maDH }}</a>
+                                @else
+                                    <span class="font-medium text-gray-700">{{ $ls->donHang->maDon ?? 'ĐH #'.$ls->maDH }}</span>
+                                @endif
                             @else
-                                —
+                                <span class="text-gray-400">—</span>
                             @endif
                         </td>
                     </tr>

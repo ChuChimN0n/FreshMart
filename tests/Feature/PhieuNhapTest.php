@@ -335,7 +335,9 @@ class PhieuNhapTest extends TestCase
         $this->actingAs($admin)->get(route('staff.kho.history'))
             ->assertOk()
             ->assertSee('Nhập hàng')
-            ->assertSee('10 → 14');
+            ->assertSee('10 → 14')
+            ->assertSee($phieu->maPhieu)
+            ->assertSee(route('staff.nhaphang.show', $phieu->maPN), false);
 
         $this->actingAs($admin)->get(route('staff.kho.history', ['loaiBienDong' => LichSuKho::BAN_HANG]))
             ->assertOk()

@@ -132,6 +132,26 @@ class OrderIntegrityTest extends TestCase
         $this->assertSame(DonHang::DANG_GIAO, $order->fresh()->trangThai);
     }
 
+    public function test_cancel_completed_or_cancelled_order_shows_specific_message(): void
+    {
+        $user = TaiKhoanFactory::new()->create();
+
+        $done = $this->orderFor($user);
+        $this->assertTrue($done->transitionTo(DonHang::DA_XAC_NHAN));
+        $this->assertTrue($done->transitionTo(DonHang::DANG_GIAO));
+        $this->assertTrue($done->transitionTo(DonHang::HOAN_THANH));
+
+        $this->actingAs($user)->patch(route('donhang.cancel', $done))
+            ->assertSessionHas('error', 'Đơn hàng đã hoàn thành, không thể hủy!');
+        $this->assertSame(DonHang::HOAN_THANH, $done->fresh()->trangThai);
+
+        $cancelled = $this->orderFor($user);
+        $this->assertTrue($cancelled->transitionTo(DonHang::DA_HUY));
+
+        $this->actingAs($user)->patch(route('donhang.cancel', $cancelled))
+            ->assertSessionHas('error', 'Đơn hàng đã được hủy, không thể hủy lại!');
+    }
+
     public function test_place_order_rejects_invalid_phone_with_vn_message(): void
     {
         $user = TaiKhoanFactory::new()->create();

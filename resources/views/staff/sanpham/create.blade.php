@@ -49,7 +49,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán (đ) <span class="text-red-500">*</span></label>
-                        <input type="number" name="giaBan" value="{{ old('giaBan', 0) }}" min="0" step="500" class="bhx-input @error('giaBan') !border-red-500 @enderror" required>
+                        <input type="number" name="giaBan" value="{{ old('giaBan') }}" min="1000" step="500" placeholder="VD: 25000" class="bhx-input @error('giaBan') !border-red-500 @enderror" required>
                         @error('giaBan') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>

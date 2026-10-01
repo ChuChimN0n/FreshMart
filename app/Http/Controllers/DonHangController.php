@@ -167,9 +167,25 @@ class DonHangController extends Controller
             abort(403);
         }
 
-        if (! $donhang->transitionTo(DonHang::DA_HUY, customerCancellation: true)) {
+        try {
+            $cancelled = $donhang->transitionTo(DonHang::DA_HUY, customerCancellation: true);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'Hoàn tồn kho thất bại, không thể hủy đơn. Vui lòng thử lại!');
+        }
+
+        if (! $cancelled) {
             if ($donhang->trangThai === DonHang::DANG_GIAO) {
                 return back()->with('error', 'Đơn hàng đang giao, không thể hủy!');
+            }
+
+            if ($donhang->trangThai === DonHang::HOAN_THANH) {
+                return back()->with('error', 'Đơn hàng đã hoàn thành, không thể hủy!');
+            }
+
+            if ($donhang->trangThai === DonHang::DA_HUY) {
+                return back()->with('error', 'Đơn hàng đã được hủy, không thể hủy lại!');
             }
 
             return back()->with('error', 'Đơn hàng không thể hủy!');

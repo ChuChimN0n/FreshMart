@@ -49,7 +49,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán (đ) <span class="text-red-500">*</span></label>
-                        <input type="number" name="giaBan" value="{{ old('giaBan', $sanPham->giaBan) }}" min="0" step="500" class="bhx-input" required>
+                        <input type="number" name="giaBan" value="{{ old('giaBan', $sanPham->giaBan) }}" min="1000" step="500" class="bhx-input" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho</label>

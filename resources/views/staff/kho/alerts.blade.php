@@ -52,6 +52,9 @@
                     <th class="px-4 py-3 text-right font-semibold">Tồn kho</th>
                     <th class="px-4 py-3 text-right font-semibold">Ngưỡng tối thiểu</th>
                     <th class="px-4 py-3 text-left font-semibold">Cảnh báo</th>
+                    @if(Auth::user()->canAccessRoute('staff.nhaphang.create'))
+                        <th class="px-4 py-3 text-right font-semibold">Hành động</th>
+                    @endif
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -72,10 +75,20 @@
                                 <span class="bhx-tag bg-amber-100 text-amber-700">Sắp hết hàng</span>
                             @endif
                         </td>
+                        @if(Auth::user()->canAccessRoute('staff.nhaphang.create'))
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-end">
+                                    <a href="{{ route('staff.nhaphang.create', ['maNCC' => $sp->maNCC, 'maSP' => $sp->maSP]) }}" title="Nhập hàng cho sản phẩm này"
+                                        class="inline-flex items-center gap-1.5 rounded-lg bg-green-50 text-green-700 px-3 py-2 text-sm font-medium hover:bg-green-100 transition whitespace-nowrap">
+                                        <i class="bi bi-box-arrow-in-down"></i> Nhập hàng
+                                    </a>
+                                </div>
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4">
+                        <td colspan="5">
                             <x-empty-state icon="bi-bell" title="Không có cảnh báo tồn kho"
                                 desc="Mọi sản phẩm đều còn hàng trên ngưỡng" />
                         </td>

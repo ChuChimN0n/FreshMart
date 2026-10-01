@@ -65,7 +65,16 @@ class PhieuNhapController extends Controller
             ->map(fn ($rows): array => $rows->pluck('maSP')->all())
             ->all();
 
-        return view('staff.nhaphang.create', compact('nhaCungCaps', 'sanPhams', 'sanPhamById', 'nccSanPhamMap', 'maNCC'));
+        // Preset món cần nhập (?maSP=): chỉ nhận khi SP đang bán, NCC hợp lệ
+        // và SP thuộc NCC đó (đúng điều kiện store dùng để chặn).
+        $presetMaSP = 0;
+        $maSP = $request->integer('maSP');
+        if ($maNCC && $maSP && isset($sanPhamById[$maSP])
+            && in_array($maSP, $nccSanPhamMap[$maNCC] ?? [], true)) {
+            $presetMaSP = $maSP;
+        }
+
+        return view('staff.nhaphang.create', compact('nhaCungCaps', 'sanPhams', 'sanPhamById', 'nccSanPhamMap', 'maNCC', 'presetMaSP'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -78,8 +87,20 @@ class PhieuNhapController extends Controller
             'items.*.soLuong' => 'required|integer|min:1',
             'items.*.giaNhap' => 'required|numeric|min:0',
         ], [
+            'maNCC.required' => 'Bạn chưa chọn nhà cung cấp.',
+            'maNCC.exists' => 'Nhà cung cấp đã chọn không tồn tại, vui lòng chọn lại.',
+            'ghiChu.max' => 'Ghi chú không quá 500 ký tự.',
             'items.required' => 'Phiếu nhập phải có ít nhất một sản phẩm.',
+            'items.array' => 'Danh sách sản phẩm không hợp lệ.',
             'items.min' => 'Phiếu nhập phải có ít nhất một sản phẩm.',
+            'items.*.maSP.required' => 'Có dòng thiếu sản phẩm, vui lòng chọn lại.',
+            'items.*.maSP.exists' => 'Có sản phẩm không tồn tại, vui lòng chọn lại.',
+            'items.*.soLuong.required' => 'Vui lòng nhập số lượng cho từng sản phẩm.',
+            'items.*.soLuong.integer' => 'Số lượng phải là số nguyên.',
+            'items.*.soLuong.min' => 'Số lượng phải lớn hơn 0.',
+            'items.*.giaNhap.required' => 'Vui lòng nhập giá nhập cho từng sản phẩm.',
+            'items.*.giaNhap.numeric' => 'Giá nhập phải là số.',
+            'items.*.giaNhap.min' => 'Giá nhập không được âm.',
         ]);
 
         $maNCC = (int) $request->maNCC;

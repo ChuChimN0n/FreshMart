@@ -253,6 +253,59 @@ class PhieuNhapTest extends TestCase
         $this->assertDatabaseHas('SanPham', ['maSP' => $product->maSP]);
     }
 
+    public function test_create_shows_only_supplier_products_as_chips(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+        $mine = SanPhamFactory::new()->create(['tenSP' => 'Chip rieng NCC A']);
+        $other = SanPhamFactory::new()->create(['tenSP' => 'Chip rieng NCC B']);
+        NhaCungCapSanPham::create(['maNCC' => $mine->maNCC, 'maSP' => $mine->maSP]);
+
+        $this->actingAs($admin)->get(route('staff.nhaphang.create', ['maNCC' => $mine->maNCC]))
+            ->assertOk()
+            ->assertSee('Chip rieng NCC A', false)
+            ->assertSee('NCC_SP_MAP = {"'.$mine->maNCC.'":['.$mine->maSP.']}', false);
+    }
+
+    public function test_store_rejects_missing_gia_nhap(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+        $product = SanPhamFactory::new()->create();
+        NhaCungCapSanPham::create(['maNCC' => $product->maNCC, 'maSP' => $product->maSP]);
+
+        $this->actingAs($admin)->post(route('staff.nhaphang.store'), [
+            'maNCC' => $product->maNCC,
+            'items' => [
+                ['maSP' => $product->maSP, 'soLuong' => 2, 'giaNhap' => ''],
+            ],
+        ])->assertSessionHasErrors('items.0.giaNhap');
+
+        $this->assertDatabaseCount('PhieuNhap', 0);
+    }
+
+    public function test_create_shows_notice_for_supplier_without_products(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+        $emptyNcc = NhaCungCapFactory::new()->create();
+
+        $this->actingAs($admin)->get(route('staff.nhaphang.create', ['maNCC' => $emptyNcc->maNCC]))
+            ->assertOk()
+            ->assertSee('chưa có sản phẩm nào đang bán', false);
+    }
+
+    public function test_store_shows_vietnamese_message_for_invalid_supplier(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+
+        $this->actingAs($admin)->post(route('staff.nhaphang.store'), [
+            'maNCC' => 999999,
+            'items' => [],
+        ])->assertSessionHasErrors([
+            'maNCC' => 'Nhà cung cấp đã chọn không tồn tại, vui lòng chọn lại.',
+        ]);
+
+        $this->assertDatabaseCount('PhieuNhap', 0);
+    }
+
     public function test_kho_pages_render_and_respect_permissions(): void
     {
         $staff = TaiKhoanFactory::new()->staff()->create();
@@ -301,5 +354,62 @@ class PhieuNhapTest extends TestCase
 
         $this->actingAs($staff)->get(route('staff.kho.alerts', ['trangThaiTon' => 'het']))
             ->assertOk()->assertSee($hetHang->tenSP)->assertDontSee($sapHet->tenSP);
+    }
+
+    public function test_create_preset_product_when_mapping_is_valid(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+        $product = SanPhamFactory::new()->create();
+        NhaCungCapSanPham::create(['maNCC' => $product->maNCC, 'maSP' => $product->maSP]);
+
+        $this->actingAs($admin)
+            ->get(route('staff.nhaphang.create', ['maNCC' => $product->maNCC, 'maSP' => $product->maSP]))
+            ->assertOk()
+            ->assertSee('PRESET_MASP = '.$product->maSP, false);
+    }
+
+    public function test_create_ignores_preset_when_mapping_is_invalid(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+        $product = SanPhamFactory::new()->create();
+        $otherNcc = NhaCungCapFactory::new()->create();
+
+        // maSP thuộc NCC khác.
+        $this->actingAs($admin)
+            ->get(route('staff.nhaphang.create', ['maNCC' => $otherNcc->maNCC, 'maSP' => $product->maSP]))
+            ->assertOk()
+            ->assertSee('PRESET_MASP = 0', false);
+
+        // SP ngừng bán.
+        $product->update(['trangThai' => SanPham::NGUNG_BAN]);
+        NhaCungCapSanPham::create(['maNCC' => $product->maNCC, 'maSP' => $product->maSP]);
+        $this->actingAs($admin)
+            ->get(route('staff.nhaphang.create', ['maNCC' => $product->maNCC, 'maSP' => $product->maSP]))
+            ->assertOk()
+            ->assertSee('PRESET_MASP = 0', false);
+
+        // Thiếu maNCC.
+        $this->actingAs($admin)
+            ->get(route('staff.nhaphang.create', ['maSP' => $product->maSP]))
+            ->assertOk()
+            ->assertSee('PRESET_MASP = 0', false);
+    }
+
+    public function test_alerts_show_import_link_for_admin_only(): void
+    {
+        $admin = TaiKhoanFactory::new()->admin()->create();
+        $staff = TaiKhoanFactory::new()->staff()->create();
+        $product = SanPhamFactory::new()->create(['soLuong' => 0, 'mucTonToiThieu' => 10]);
+        // Blade escape & thành &amp; trong href.
+        $expected = 'staff/nhap-hang/them?maNCC='.$product->maNCC.'&amp;maSP='.$product->maSP;
+
+        $this->actingAs($admin)->get(route('staff.kho.alerts'))
+            ->assertOk()
+            ->assertSee($expected, false);
+
+        // Nhân viên không có quyền nhập hàng nên không thấy nút.
+        $this->actingAs($staff)->get(route('staff.kho.alerts'))
+            ->assertOk()
+            ->assertDontSee($expected, false);
     }
 }

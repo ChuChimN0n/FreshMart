@@ -50,6 +50,9 @@
                     <th class="px-4 py-3 text-right font-semibold">Tồn kho</th>
                     <th class="px-4 py-3 text-right font-semibold">Ngưỡng tối thiểu</th>
                     <th class="px-4 py-3 text-left font-semibold">Trạng thái tồn</th>
+                    @if(Auth::user()->canAccessRoute('staff.nhaphang.create'))
+                        <th class="px-4 py-3 text-right font-semibold">Hành động</th>
+                    @endif
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -77,10 +80,24 @@
                                 <span class="bhx-tag bg-green-100 text-green-700">Còn hàng</span>
                             @endif
                         </td>
+                        @if(Auth::user()->canAccessRoute('staff.nhaphang.create'))
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-end">
+                                    @if($sp->isLowStock() || $sp->soLuong <= 0)
+                                        <a href="{{ route('staff.nhaphang.create', ['maNCC' => $sp->maNCC, 'maSP' => $sp->maSP]) }}" title="Nhập hàng cho sản phẩm này"
+                                            class="inline-flex items-center gap-1.5 rounded-lg bg-green-50 text-green-700 px-3 py-2 text-sm font-medium hover:bg-green-100 transition whitespace-nowrap">
+                                            <i class="bi bi-box-arrow-in-down"></i> Nhập hàng
+                                        </a>
+                                    @else
+                                        <span class="text-gray-300">—</span>
+                                    @endif
+                                </div>
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                             <x-empty-state icon="bi-boxes" title="Không có dữ liệu tồn kho"
                                 desc="Thử thay đổi từ khóa tìm kiếm" />
                         </td>

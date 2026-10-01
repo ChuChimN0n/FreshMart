@@ -282,6 +282,7 @@
     </footer>
 
     {{-- Delete confirm modal (dùng chung cho các form data-confirm) --}}
+        {{-- Delete confirm modal (dùng chung cho các form data-confirm) --}}
     <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" onclick="closeDeleteConfirm()"></div>
         <div class="relative bg-white rounded-xl shadow-xl max-w-sm w-full p-6">

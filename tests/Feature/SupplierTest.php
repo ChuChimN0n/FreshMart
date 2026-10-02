@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\NhaCungCap;
+use App\Models\NhaCungCapSanPham;
 use Database\Factories\SanPhamFactory;
 use Database\Factories\TaiKhoanFactory;
 use Database\Seeders\RolePermissionSeeder;
@@ -144,5 +145,24 @@ class SupplierTest extends TestCase
         $this->get(route('admin.nhacungcap.edit', $ncc))
             ->assertOk()
             ->assertSee('Xem trước nhà cung cấp', false);
+    }
+
+    public function test_deleting_supplier_with_orphan_mapping_is_rejected(): void
+    {
+        $this->actingAs(TaiKhoanFactory::new()->admin()->create());
+
+        $ncc = NhaCungCap::create([
+            'tenNCC' => 'NCC Mapping',
+            'soDienThoai' => '0901234568',
+            'email' => 'mapping.real@gmail.com',
+            'diaChi' => 'Ha Noi',
+        ]);
+        $product = SanPhamFactory::new()->create();
+        NhaCungCapSanPham::create(['maNCC' => $ncc->maNCC, 'maSP' => $product->maSP]);
+
+        $this->delete(route('admin.nhacungcap.destroy', $ncc))
+            ->assertSessionHas('error', 'Nhà cung cấp này đã được sử dụng trong sản phẩm, không thể xóa!');
+
+        $this->assertNotNull($ncc->fresh());
     }
 }

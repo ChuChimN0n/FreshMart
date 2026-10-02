@@ -119,7 +119,7 @@ class NhaCungCapController extends Controller
 
     public function destroy(NhaCungCap $nhacungcap): RedirectResponse
     {
-        if ($nhacungcap->sanPhams()->exists()) {
+        if ($nhacungcap->sanPhams()->exists() || $nhacungcap->cungCapSanPhams()->exists()) {
             return back()->with('error', 'Nhà cung cấp này đã được sử dụng trong sản phẩm, không thể xóa!');
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Quyen;
 use App\Models\VaiTro;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -114,10 +115,18 @@ class VaiTroController extends Controller
             return back()->with('error', 'Vai trò còn tài khoản đang sử dụng, không thể xóa!');
         }
 
-        DB::transaction(function () use ($vaitro): void {
-            $vaitro->quyens()->detach();
-            $vaitro->delete();
-        });
+        try {
+            DB::transaction(function () use ($vaitro): void {
+                $vaitro->quyens()->detach();
+                $vaitro->delete();
+            });
+        } catch (QueryException $e) {
+            if ($vaitro->taiKhoans()->exists()) {
+                return back()->with('error', 'Vai trò còn tài khoản đang sử dụng, không thể xóa!');
+            }
+
+            throw $e;
+        }
 
         return redirect()->route('admin.vaitro.index')->with('success', 'Xóa vai trò thành công!');
     }
